@@ -8,13 +8,6 @@ public class MidpointAimStrategy : ICameraStrategy
     private Vector3 aimWorld;
     private bool hasAim;
 
-    // 🔧 Smooth ayarları
-    [Header("Camera Smooth")]
-    [SerializeField] private float followSharpness = 1f;
-    // 1   → normal SmoothDamp
-    // <1  → daha ağır / yumuşak
-    // >1  → daha hızlı
-
     public void OnEnter(CameraController controller)
     {
         c = controller;
@@ -40,16 +33,26 @@ public class MidpointAimStrategy : ICameraStrategy
             return;
 
         Vector3 playerPos = c.Target.position;
-
-        // 1️⃣ Midpoint (kamera hedefi)
-        Vector3 targetPos = (playerPos + aimWorld) * 0.5f;
-
-        // Kamera Z sabit
         Vector3 camPos = c.transform.position;
+
+        // 1️⃣ Midpoint
+        Vector3 midpoint = (playerPos + aimWorld) * 0.5f;
+
+        // 2️⃣ Player-centered deadzone
+        Vector3 offset = midpoint - playerPos;
+        offset.z = 0f;
+
+        Vector3 targetPos;
+
+        if (offset.magnitude < c.DeadzoneRadius)
+            targetPos = playerPos;
+        else
+            targetPos = midpoint;
+
         targetPos.z = camPos.z;
 
-        // 2️⃣ Daha yumuşak SmoothDamp
-        float smoothTime = c.SmoothTime / Mathf.Max(0.0001f, followSharpness);
+        // 3️⃣ Smooth follow
+        float smoothTime = c.SmoothTime / Mathf.Max(0.0001f, c.FollowSharpness);
 
         c.transform.position = Vector3.SmoothDamp(
             camPos,

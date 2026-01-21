@@ -270,8 +270,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CameraController
   target: {fileID: 0}
-  cam: {fileID: 0}
   smoothTime: 0.08
+  followSharpness: 1
+  deadzoneRadius: 0.4
 --- !u!1 &529185637
 GameObject:
   m_ObjectHideFlags: 0
@@ -603,7 +604,7 @@ MonoBehaviour:
   crosshairImage: {fileID: 1286531695}
   smoothTime: 0.04
   maxSpeed: 10000
-  worldClampPadding: 1
+  screenPadding: 20
 --- !u!1 &1677810674
 GameObject:
   m_ObjectHideFlags: 0

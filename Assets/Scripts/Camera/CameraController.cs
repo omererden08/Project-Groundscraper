@@ -3,27 +3,32 @@
 public class CameraController : MonoBehaviour
 {
     [Header("References")]
-    [SerializeField] private Transform target;   // Player
-    [SerializeField] private Camera cam;
+    [SerializeField] private Transform target;   // PLAYER
 
-    [Header("Smoothing")]
-    [SerializeField] private float smoothTime = 0.10f;
+    [Header("Camera Follow")]
+    [SerializeField] private float smoothTime = 0.08f;
+    [SerializeField] private float followSharpness = 1f;
+
+    [Header("Player Deadzone")]
+    [SerializeField] private float deadzoneRadius = 0.5f;
 
     public Transform Target => target;
-    public Camera Cam => cam;
     public float SmoothTime => smoothTime;
+    public float FollowSharpness => followSharpness;
+    public float DeadzoneRadius => deadzoneRadius;
 
     private ICameraStrategy currentStrategy;
 
     private void Awake()
     {
-        if (cam == null) cam = Camera.main;
-
+        // Güvenlik: target boşsa Player tag'inden bul
         if (target == null)
         {
-            var player = GameObject.FindGameObjectWithTag("Player");
-            if (player != null) target = player.transform;
-            else Debug.LogError("[CameraController] Player (tag=Player) bulunamadı!");
+            GameObject player = GameObject.FindGameObjectWithTag("Player");
+            if (player != null)
+                target = player.transform;
+            else
+                Debug.LogError("[CameraController] Player bulunamadı!");
         }
     }
 
@@ -37,10 +42,10 @@ public class CameraController : MonoBehaviour
         currentStrategy?.TickLate(Time.deltaTime);
     }
 
-    public void SetStrategy(ICameraStrategy next)
+    public void SetStrategy(ICameraStrategy strategy)
     {
         currentStrategy?.OnExit();
-        currentStrategy = next;
-        currentStrategy?.OnEnter(this);
+        currentStrategy = strategy;
+        currentStrategy.OnEnter(this);
     }
 }

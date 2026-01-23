@@ -8,14 +8,12 @@ public class InputManager : MonoBehaviour
     private PlayerInputActions inputActions;
 
     public Vector2 MoveInput { get; private set; }
-
-    // 🔒 LOOKINPUT = SCREEN POSITION (PIXEL)
     public Vector2 LookInput { get; private set; }
-
-    // 🔒 ROTATE / DIRECTION İÇİN AYRI (ileride kullanılır)
     public Vector2 LookDirection { get; private set; }
 
-    public bool FirePressed { get; private set; }
+    private bool attackPressed;
+    public bool AttackPressed => attackPressed;
+
     public bool PausePressed { get; private set; }
 
     private void Awake()
@@ -31,21 +29,29 @@ public class InputManager : MonoBehaviour
 
         inputActions = new PlayerInputActions();
         inputActions.Enable();
+
+        inputActions.Player.Attack.performed += ctx => attackPressed = true;
+        inputActions.Player.Pause.performed += ctx => PausePressed = true;
     }
 
     private void Update()
     {
-        // Hareket
         MoveInput = inputActions.Player.Move.ReadValue<Vector2>();
 
-        // 🖱️ AIM İÇİN — SCREEN POSITION
         if (Mouse.current != null)
             LookInput = Mouse.current.position.ReadValue();
 
-        // 🎮 ROTATE / STICK İÇİN (şimdilik sıfır, gamepad eklenirse burası dolar)
         LookDirection = Vector2.zero;
 
-        FirePressed = false;
+    }
+
+    public void ConsumeAttackInput()
+    {
+        attackPressed = false;
+    }
+
+    public void ConsumePauseInput()
+    {
         PausePressed = false;
     }
 }

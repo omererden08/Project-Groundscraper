@@ -14,6 +14,9 @@ public class InputManager : MonoBehaviour
     private bool attackPressed;
     public bool AttackPressed => attackPressed;
 
+    private bool interactPressed;
+    public bool InteractPressed => interactPressed;
+
     public bool PausePressed { get; private set; }
 
     private void Awake()
@@ -32,6 +35,8 @@ public class InputManager : MonoBehaviour
 
         inputActions.Player.Attack.performed += ctx => attackPressed = true;
         inputActions.Player.Pause.performed += ctx => PausePressed = true;
+        inputActions.Player.Interact.performed += ctx => interactPressed = true;
+
     }
 
     private void Update()
@@ -45,13 +50,8 @@ public class InputManager : MonoBehaviour
 
     }
 
-    public void ConsumeAttackInput()
-    {
-        attackPressed = false;
-    }
+    public void ConsumeAttackInput() => attackPressed = false;
+    public void ConsumePauseInput() => PausePressed = false;
+    public void ConsumeInteractInput() => interactPressed = false;
 
-    public void ConsumePauseInput()
-    {
-        PausePressed = false;
-    }
 }

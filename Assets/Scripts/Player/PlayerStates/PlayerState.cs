@@ -43,12 +43,18 @@ public class PlayerIdleState : PlayerState
 
         if (InputManager.Instance.AttackPressed)
         {
-            InputManager.Instance.ConsumeAttackInput(); 
+            InputManager.Instance.ConsumeAttackInput();
 
-            if (player.HasWeapon)
+            if (player.CurrentWeapon is RangedWeapon)
+            {
                 stateMachine.ChangeState(player.ShootState);
+            }
+            // Eğer hiç silah yoksa veya sadece melee weapon varsa MeleeState'e geç
             else
+            {
                 stateMachine.ChangeState(player.MeleeState);
+            }
+
         }
 
     }
@@ -78,12 +84,17 @@ public class PlayerMoveState : PlayerState
 
         if (InputManager.Instance.AttackPressed)
         {
-            InputManager.Instance.ConsumeAttackInput(); 
+            InputManager.Instance.ConsumeAttackInput();
 
-            if (player.HasWeapon)
+            if (player.CurrentWeapon is RangedWeapon)
+            {
                 stateMachine.ChangeState(player.ShootState);
+            }
             else
+            {
                 stateMachine.ChangeState(player.MeleeState);
+            }
+
         }
 
     }
@@ -110,7 +121,6 @@ public class PlayerShootState : PlayerState
     {
         timer = 0f;
         PlayerEvents.RaiseShoot(player.transform.position, player.AimDirection);
-        Debug.Log("Shoot!");
     }
 
     public override void Update()
@@ -148,10 +158,20 @@ public class PlayerMeleeState : PlayerState
     public override void Enter()
     {
         timer = 0f;
-        MeleeAttackHandler.DoAttack(player);
+
+        if (player.HasWeapon && player.CurrentWeapon is IWeapon weapon)
+        {
+            weapon.Use(); // Silah varsa kullan
+        }
+        else
+        {
+            MeleeAttackHandler.DoAttack(player); // Silah yoksa el ile saldır
+        }
+
         PlayerEvents.RaiseMeleeAttack(player.transform.position, player.AimDirection);
-        Debug.Log("Melee Attack!");
     }
+
+
 
     public override void Update()
     {

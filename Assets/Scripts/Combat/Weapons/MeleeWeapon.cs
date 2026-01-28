@@ -13,34 +13,24 @@ public class MeleeWeapon : MonoBehaviour, IWeapon
     [SerializeField] private float dropAngularDrag = 7f;
     [SerializeField] private float dragResetDelay = 1f;
 
-
     public string WeaponID => weaponID;
     public bool IsRanged => false;
 
-
     public void Use()
     {
-        // Weapon elde takılı mı kontrolü
         if (transform.parent == null)
         {
-            Debug.LogWarning("MeleeWeapon.Use() called but weapon is not equipped.");
+            Debug.LogWarning("Tried to use unequipped weapon.");
             return;
         }
 
-        // Weapon holder = player veya enemy olabilir
         IMeleeAttacker attacker = transform.parent.GetComponentInParent<IMeleeAttacker>();
-        if (attacker == null)
+        if (attacker != null)
         {
-            Debug.LogWarning("No IMeleeAttacker found for melee weapon.");
-            return;
+            MeleeAttackHandler.DoAttack(attacker);
+            Debug.Log("🪓 Melee Attack executed");
         }
-
-        // 🔥 Asıl vuruş burada
-        MeleeAttackHandler.DoAttack(attacker);
-
-        Debug.Log("🪓 Melee Attack executed");
     }
-
 
     public void OnEquip(Transform weaponHolder)
     {
@@ -48,16 +38,17 @@ public class MeleeWeapon : MonoBehaviour, IWeapon
         transform.localPosition = Vector3.zero;
         transform.localRotation = Quaternion.identity;
 
-        var rb = GetComponent<Rigidbody2D>();
+        Rigidbody2D rb = GetComponent<Rigidbody2D>();
         if (rb)
         {
             rb.linearVelocity = Vector2.zero;
+            rb.angularVelocity = 0f;
             rb.isKinematic = true;
         }
 
-        var col = GetComponent<Collider2D>();
+        Collider2D col = GetComponent<Collider2D>();
         if (col)
-            col.enabled = false; // 🟢 ÖNEMLİ: Silah eldeyken collider kapalı
+            col.enabled = false;
     }
 
 
@@ -65,23 +56,27 @@ public class MeleeWeapon : MonoBehaviour, IWeapon
     {
         transform.SetParent(null);
 
-        var rb = GetComponent<Rigidbody2D>();
+        Rigidbody2D rb = GetComponent<Rigidbody2D>();
         if (rb)
         {
-            rb.isKinematic = false;
             rb.linearVelocity = Vector2.zero;
             rb.angularVelocity = 0f;
+
+            // Rigidbody önce resetlenmeli
+            rb.isKinematic = false;
+            rb.rotation = 0f; // opsiyonel: dönme sıfırlanır
 
             rb.AddForce(dropDirection.normalized * dropForce, ForceMode2D.Impulse);
             rb.linearDamping = dropLinearDrag;
             rb.angularDamping = dropAngularDrag;
 
+            StopAllCoroutines(); // Yeni coroutine başlamadan önce eskileri iptal et
             StartCoroutine(ResetDrag(rb, dragResetDelay));
         }
 
-        var col = GetComponent<Collider2D>();
+        Collider2D col = GetComponent<Collider2D>();
         if (col)
-            col.enabled = true; // 🟢 Drop edilince collider tekrar açılır
+            col.enabled = true;
 
         Debug.Log("📦 Weapon Dropped");
     }

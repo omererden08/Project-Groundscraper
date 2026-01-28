@@ -25,15 +25,14 @@ public class Bullet : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        // Sadece enemy ile çarpıştığında tetiklenir
-        if (collision.CompareTag("Enemy") && collision.TryGetComponent(out IDamageable target))
+        if (collision.TryGetComponent(out IDamageable damageable))
         {
-            target.Die();
-
-            CancelInvoke(nameof(ReturnToPool)); // ⛔ Gecikmeli çağrıyı iptal et
-            ReturnToPool(); // 🔁 Hemen geri gönder
+            damageable.Die();
+            CancelInvoke();
+            ReturnToPool();
         }
     }
+
 
     private void ReturnToPool()
     {

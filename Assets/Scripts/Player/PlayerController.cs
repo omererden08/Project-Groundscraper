@@ -14,7 +14,7 @@ public class PlayerController : MonoBehaviour, IMeleeAttacker, IDamageable
     [SerializeField] private float meleeRange = 1.2f;
     [SerializeField] private float meleeRadius = 0.75f;
 
-    [Header("Weapon Settings")]
+    [Header("Weapon")]
     [SerializeField] private Transform weaponHoldPoint;
     [SerializeField] private float pickupRadius = 1.5f;
 
@@ -22,31 +22,41 @@ public class PlayerController : MonoBehaviour, IMeleeAttacker, IDamageable
     [SerializeField] private string currentStateName;
 
     private Rigidbody2D rb;
-    private Vector2 cachedAimDir;
+    private Vector2 aimDirection;
     private bool hasAim;
 
     private IWeapon currentWeapon;
 
-    // === Public API ===
+    // =========================
+    // Public API
+    // =========================
     public Transform Transform => transform;
-    public Vector2 AimDirection => cachedAimDir;
+    public Vector2 AimDirection => aimDirection;
     public float MeleeRange => meleeRange;
     public float MeleeRadius => meleeRadius;
     public float MoveSpeed => moveSpeed;
     public Rigidbody2D Rigidbody => rb;
+
     public bool HasWeapon => currentWeapon != null;
     public IWeapon CurrentWeapon => currentWeapon;
+
     public float ShootDuration => shootDuration;
     public float MeleeDuration => meleeDuration;
 
-    // === State Machine ===
+    // =========================
+    // FSM
+    // =========================
     public PlayerStateMachine StateMachine { get; private set; }
+
     public PlayerIdleState IdleState { get; private set; }
     public PlayerMoveState MoveState { get; private set; }
     public PlayerShootState ShootState { get; private set; }
     public PlayerMeleeState MeleeState { get; private set; }
     public PlayerDeadState DeadState { get; private set; }
 
+    // =========================
+    // Unity
+    // =========================
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -54,26 +64,17 @@ public class PlayerController : MonoBehaviour, IMeleeAttacker, IDamageable
         rb.interpolation = RigidbodyInterpolation2D.Interpolate;
 
         if (weaponHoldPoint == null)
-        {
-            Transform found = transform.Find("WeaponHoldPoint");
-            if (found != null)
-            {
-                weaponHoldPoint = found;
-            }
-            else
-            {
-                Debug.LogWarning(" WeaponHoldPoint bulunamadı. Lütfen Player altına 'WeaponHoldPoint' adında bir child obje ekleyin.");
-            }
-        }
+            weaponHoldPoint = transform.Find("WeaponHoldPoint");
 
         StateMachine = new PlayerStateMachine();
+
         IdleState = new PlayerIdleState(this, StateMachine);
         MoveState = new PlayerMoveState(this, StateMachine);
         ShootState = new PlayerShootState(this, StateMachine);
         MeleeState = new PlayerMeleeState(this, StateMachine);
         DeadState = new PlayerDeadState(this, StateMachine);
     }
-    
+
     private void Start()
     {
         StateMachine.Initialize(IdleState);
@@ -82,7 +83,6 @@ public class PlayerController : MonoBehaviour, IMeleeAttacker, IDamageable
     private void Update()
     {
         CacheAimDirection();
-
         HandleWeaponInteraction();
 
         StateMachine.CurrentState.HandleInput();
@@ -96,32 +96,25 @@ public class PlayerController : MonoBehaviour, IMeleeAttacker, IDamageable
         StateMachine.CurrentState.PhysicsUpdate();
     }
 
-    private void OnEnable()
-    {
-        PlayerEvents.OnWeaponDropped += HandleWeaponDropped;
-    }
-
-    private void OnDisable()
-    {
-        PlayerEvents.OnWeaponDropped -= HandleWeaponDropped;
-    }
-
-
+    // =========================
+    // Aim
+    // =========================
     private void CacheAimDirection()
     {
         if (Camera.main == null) return;
 
-        Vector3 mouseWorld = Camera.main.ScreenToWorldPoint(new Vector3(
-            InputManager.Instance.LookInput.x,
-            InputManager.Instance.LookInput.y,
-            Mathf.Abs(Camera.main.transform.position.z)
-        ));
+        Vector3 mouseWorld = Camera.main.ScreenToWorldPoint(
+            new Vector3(
+                InputManager.Instance.LookInput.x,
+                InputManager.Instance.LookInput.y,
+                Mathf.Abs(Camera.main.transform.position.z)
+            )
+        );
 
         Vector2 dir = mouseWorld - transform.position;
-
         if (dir.sqrMagnitude < 0.001f) return;
 
-        cachedAimDir = dir.normalized;
+        aimDirection = dir.normalized;
         hasAim = true;
     }
 
@@ -129,93 +122,90 @@ public class PlayerController : MonoBehaviour, IMeleeAttacker, IDamageable
     {
         if (!hasAim) return;
 
-        float angle = Mathf.Atan2(cachedAimDir.y, cachedAimDir.x) * Mathf.Rad2Deg;
+        float angle = Mathf.Atan2(aimDirection.y, aimDirection.x) * Mathf.Rad2Deg;
         rb.rotation = angle;
     }
 
-    public void Die()
-    {
-        StateMachine.ChangeState(DeadState);
-        PlayerEvents.RaisePlayerDied();
-    }
-
+    // =========================
+    // Weapon
+    // =========================
     private void HandleWeaponInteraction()
     {
-        if (!InputManager.Instance.InteractPressed) return;
+        if (!InputManager.Instance.InteractPressed)
+            return;
 
         InputManager.Instance.ConsumeInteractInput();
 
         if (HasWeapon)
-        {
             DropWeapon();
-        }
         else
-        {
             TryPickupWeapon();
-        }
     }
 
     private void TryPickupWeapon()
     {
-        Collider2D[] colliders = Physics2D.OverlapCircleAll(transform.position, pickupRadius);
+        Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, pickupRadius);
 
-        foreach (var col in colliders)
+        foreach (var hit in hits)
         {
-            if (col.TryGetComponent(out IWeapon weapon))
+            if (hit.TryGetComponent(out IWeapon weapon))
             {
-                Debug.Log($"🟢 Weapon found: {weapon.WeaponID}");
-                PickupWeapon(weapon);
+                EquipWeapon(weapon);
                 break;
             }
         }
     }
 
-    private void PickupWeapon(IWeapon newWeapon)
+    private void EquipWeapon(IWeapon weapon)
     {
-        currentWeapon = newWeapon;
-        newWeapon.OnEquip(weaponHoldPoint);
-        PlayerEvents.RaiseWeaponPickedUp(newWeapon.WeaponID);
+        if (currentWeapon != null)
+            DropWeapon();
 
-        // 🎯 UI bağlantısı
-        if (newWeapon is RangedWeapon rangedWeapon)
-        {
-            FindObjectOfType<AmmoUI>().SetWeapon(rangedWeapon);
-        }
+        currentWeapon = weapon;
+        weapon.OnEquip(weaponHoldPoint);
+
+        PlayerEvents.RaiseWeaponPickedUp(weapon.WeaponID);
+
+        if (weapon is RangedWeapon ranged)
+            FindObjectOfType<AmmoUI>()?.SetWeapon(ranged);
     }
 
     private void DropWeapon()
     {
         if (currentWeapon == null) return;
 
-        currentWeapon.OnDrop(AimDirection);
+        currentWeapon.OnDrop(aimDirection);
+        PlayerEvents.RaiseWeaponDropped(currentWeapon.WeaponID);
 
+        if (currentWeapon is RangedWeapon)
+            FindObjectOfType<AmmoUI>()?.Clear();
+
+        currentWeapon = null;
     }
 
-
-    private void HandleWeaponDropped(string weaponId)
+    // =========================
+    // Damage
+    // =========================
+    public void Die()
     {
-        if (currentWeapon != null && currentWeapon.WeaponID == weaponId)
-        {
-            FindObjectOfType<AmmoUI>()?.Clear();  
-            currentWeapon = null;                 
-        }
+        StateMachine.ChangeState(DeadState);
+        PlayerEvents.RaisePlayerDied();
     }
 
-
+    // =========================
+    // Debug
+    // =========================
     private void OnDrawGizmosSelected()
     {
-        // Pickup Area
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(transform.position, pickupRadius);
 
-        // Melee Attack Area
         Gizmos.color = Color.red;
-
-        Vector2 direction = Application.isPlaying && AimDirection != Vector2.zero
-            ? AimDirection
+        Vector2 dir = Application.isPlaying && aimDirection != Vector2.zero
+            ? aimDirection
             : Vector2.right;
 
-        Vector2 center = (Vector2)transform.position + direction * meleeRange;
+        Vector2 center = (Vector2)transform.position + dir * meleeRange;
         Gizmos.DrawWireSphere(center, meleeRadius);
     }
 }

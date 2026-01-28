@@ -100,6 +100,11 @@ public class RangedWeapon : MonoBehaviour, IWeapon
             rb.angularDamping = data.drag;
         }
         PlayerEvents.RaiseWeaponDropped(WeaponID);
+        
+        AmmoUI ammoUI = FindObjectOfType<AmmoUI>();
+        if (ammoUI != null)
+            ammoUI.Clear();
+
     }
 
     public void OnEquip(Transform holder)

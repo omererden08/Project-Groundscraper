@@ -75,10 +75,6 @@ public class EnemyController : MonoBehaviour, IDamageable, IMeleeAttacker
         stateMachine.Initialize(patrolPoints.Length > 0 ? PatrolState : IdleState);
         PathIndex = 0;
 
-        for (int i = 0; i < patrolPoints.Length; i++)
-        {
-            Debug.Log($"📌 Patrol Point {i}: {patrolPoints[i]}");
-        }
     }
 
     private void Update()

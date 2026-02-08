@@ -18,6 +18,7 @@ public class InputManager : MonoBehaviour
     public bool InteractPressed => interactPressed;
 
     public bool PausePressed { get; private set; }
+    
 
     private void Awake()
     {

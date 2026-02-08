@@ -15,7 +15,6 @@ public class EnemyPathfinder : MonoBehaviour
     public void RequestPath(Vector2 from, Vector2 to)
     {
         currentPath.Clear();
-        Debug.Log($"📦 Requesting path from {from} to {to}");
 
         var path = AStarPathfinder.FindPath(from, to);
         if (path != null && path.Count > 0)
@@ -23,7 +22,6 @@ public class EnemyPathfinder : MonoBehaviour
             foreach (var node in path)
                 currentPath.Add(node.worldPosition);
 
-            Debug.Log("✅ Path generated with " + currentPath.Count + " points.");
         }
         else
         {

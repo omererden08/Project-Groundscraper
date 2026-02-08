@@ -1,68 +1,32 @@
 ﻿using UnityEngine;
-using UnityEngine.SceneManagement;
-using System;
-
-public enum GameState { MainMenu, Playing, Paused, GameOver }
-
-public static class GameEvents
-{
-    public static event Action<GameState> OnGameStateChanged;
-    public static event Action OnGamePaused;
-    public static event Action OnGameResumed;
-    public static event Action OnGameOver;
-    public static event Action OnLevelRestarted;
-
-    public static void RaiseGameStateChanged(GameState newState) => OnGameStateChanged?.Invoke(newState);
-    public static void RaiseGamePaused() => OnGamePaused?.Invoke();
-    public static void RaiseGameResumed() => OnGameResumed?.Invoke();
-    public static void RaiseGameOver() => OnGameOver?.Invoke();
-    public static void RaiseLevelRestarted() => OnLevelRestarted?.Invoke();
-}
 
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
 
-    [Header("Debug")]
-    [SerializeField] private GameState currentState;
-
+    [SerializeField] private GameState currentState = GameState.MainMenu;
     public GameState CurrentState => currentState;
 
     private void Awake()
     {
-        if (Instance == null)
-        {
-            Instance = this;
-            DontDestroyOnLoad(gameObject);
-        }
-        else
+        if (Instance != null && Instance != this)
         {
             Destroy(gameObject);
+            return;
         }
+
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
     }
 
     private void OnEnable()
     {
-        // Player öldüğünde level restartla
-        PlayerEvents.OnPlayerDied += RestartLevel;
+        GameEvents.OnSceneLoadCompleted += HandleSceneLoadCompleted;
     }
 
     private void OnDisable()
     {
-        PlayerEvents.OnPlayerDied -= RestartLevel;
-    }
-
-    private void Update()
-    {
-        if (InputManager.Instance != null && InputManager.Instance.PausePressed)
-        {
-            if (CurrentState == GameState.Playing)
-                SetGameState(GameState.Paused);
-            else if (CurrentState == GameState.Paused)
-                SetGameState(GameState.Playing);
-
-            InputManager.Instance.ConsumePauseInput();
-        }
+        GameEvents.OnSceneLoadCompleted -= HandleSceneLoadCompleted;
     }
 
     public void SetGameState(GameState newState)
@@ -70,7 +34,6 @@ public class GameManager : MonoBehaviour
         if (currentState == newState) return;
 
         currentState = newState;
-
         GameEvents.RaiseGameStateChanged(newState);
 
         switch (newState)
@@ -90,20 +53,19 @@ public class GameManager : MonoBehaviour
                 GameEvents.RaiseGameOver();
                 break;
 
+            case GameState.Cutscene:
+                Time.timeScale = 1f;
+                break;
+
             case GameState.MainMenu:
                 Time.timeScale = 1f;
                 break;
         }
-
-        Debug.Log($"🟡 Game State changed to: {newState}");
     }
 
-    public void RestartLevel()
+    private void HandleSceneLoadCompleted(string sceneName)
     {
-        Time.timeScale = 1f;
-        GameEvents.RaiseLevelRestarted();
-
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
-        SetGameState(GameState.Playing);
+        // Oyun sahnesine geçiş sonrası state kontrolü burada yapılmaz.
+        // State geçişi LevelTransitionController'dan yapılır.
     }
 }

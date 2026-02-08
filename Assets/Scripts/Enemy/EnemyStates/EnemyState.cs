@@ -127,7 +127,6 @@ public class PatrolState : EnemyState
     }
 }
 
-
 public class ChaseState : EnemyState
 {
     public ChaseState(EnemyController enemy, EnemyStateMachine sm) : base(enemy, sm) { }
@@ -200,7 +199,6 @@ public class ChaseState : EnemyState
         return closest;
     }
 }
-
 
 public class AttackState : EnemyState
 {

@@ -212,5 +212,6 @@ public class PlayerDeadState : PlayerState
         if (col) col.enabled = false;
 
         Debug.Log("Player died.");
+        LevelTransitionController.Instance.RestartLevel();
     }
 }

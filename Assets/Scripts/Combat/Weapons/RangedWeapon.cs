@@ -10,7 +10,7 @@ public class RangedWeapon : MonoBehaviour, IWeapon
     [SerializeField] private Transform firePoint;
 
     private int currentAmmo;
-
+    private SpriteRenderer spriteRenderer;
 
     public int CurrentAmmo => currentAmmo;
     public int MaxAmmo => data.maxAmmo;
@@ -34,6 +34,7 @@ public class RangedWeapon : MonoBehaviour, IWeapon
             Debug.LogError("❌ FirePoint not found!");
 
         currentAmmo = data.maxAmmo;
+        spriteRenderer = GetComponent<SpriteRenderer>();
     }
 
     private void OnEnable()
@@ -112,7 +113,7 @@ public class RangedWeapon : MonoBehaviour, IWeapon
         transform.SetParent(holder);
         transform.localPosition = Vector3.zero;
         transform.localRotation = Quaternion.identity;
-
+        
         var rb = GetComponent<Rigidbody2D>();
         if (rb)
         {
@@ -122,10 +123,12 @@ public class RangedWeapon : MonoBehaviour, IWeapon
 
         var col = GetComponent<Collider2D>();
         if (col) col.enabled = false;
+        spriteRenderer.enabled = false;
     }
 
     public void OnDrop(Vector2 direction)
     {
         ThrowAsProjectile(direction);
+        spriteRenderer.enabled = true;
     }
 }

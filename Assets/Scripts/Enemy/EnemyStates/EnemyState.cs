@@ -18,22 +18,24 @@ public abstract class EnemyState
 
 public class IdleState : EnemyState
 {
-    public IdleState(EnemyController enemy, EnemyStateMachine stateMachine) : base(enemy, stateMachine) { }
+    public IdleState(EnemyController enemy, EnemyStateMachine stateMachine)
+        : base(enemy, stateMachine) { }
 
-    public override void Enter() => enemy.StopMoving();
+    public override void Enter()
+    {
+        enemy.StopMoving();
+    }
 
     public override void Update()
     {
-        if (enemy.IsPlayerVisible())
-        {
-            if (enemy.Data.isRanged && enemy.IsInAttackRange())
-                stateMachine.ChangeState(enemy.AttackState);
-            else
-                stateMachine.ChangeState(enemy.ChaseState);
-        }
+        if (!enemy.IsPlayerVisible())
+            return;
+
+        if (enemy.Data != null && enemy.Data.isRanged && enemy.IsInAttackRange())
+            stateMachine.ChangeState(enemy.AttackState);
+        else
+            stateMachine.ChangeState(enemy.ChaseState);
     }
-
-
 }
 
 public class PatrolState : EnemyState
@@ -42,11 +44,19 @@ public class PatrolState : EnemyState
     private int direction = 1;
     private Vector3 currentTarget;
 
-    public PatrolState(EnemyController enemy, EnemyStateMachine sm) : base(enemy, sm) { }
+    public PatrolState(EnemyController enemy, EnemyStateMachine sm)
+        : base(enemy, sm) { }
 
     public override void Enter()
     {
         enemy.StopMoving();
+
+        if (enemy.PatrolPoints == null || enemy.PatrolPoints.Length == 0)
+        {
+            stateMachine.ChangeState(enemy.IdleState);
+            return;
+        }
+
         currentIndex = FindClosestPointIndex();
         SetNewTarget();
     }
@@ -59,10 +69,16 @@ public class PatrolState : EnemyState
             return;
         }
 
+        if (enemy.PatrolPoints == null || enemy.PatrolPoints.Length == 0)
+        {
+            stateMachine.ChangeState(enemy.IdleState);
+            return;
+        }
+
         if (!enemy.Pathfinder.HasPath)
             return;
 
-        // 🔄 Pathte ilerle
+        // Path üzerinde ilerle
         if (enemy.PathIndex < enemy.Pathfinder.CurrentPath.Count)
         {
             Vector2 lookTarget = enemy.Pathfinder.CurrentPath[enemy.PathIndex];
@@ -78,7 +94,7 @@ public class PatrolState : EnemyState
                 enemy.PathIndex++;
         }
 
-        // 🎯 Hedef nokta yakınsa bir sonrakine geç
+        // Hedef noktaya yeterince yaklaştıysa bir sonrakine geç
         if (Vector2.Distance(enemy.Transform.position, currentTarget) < 0.3f)
         {
             AdvanceIndex();
@@ -88,6 +104,9 @@ public class PatrolState : EnemyState
 
     private void SetNewTarget()
     {
+        if (enemy.PatrolPoints == null || enemy.PatrolPoints.Length == 0)
+            return;
+
         currentTarget = enemy.PatrolPoints[currentIndex];
         enemy.PathIndex = 0;
         enemy.Pathfinder.RequestPath(enemy.Transform.position, currentTarget);
@@ -95,6 +114,9 @@ public class PatrolState : EnemyState
 
     private void AdvanceIndex()
     {
+        if (enemy.PatrolPoints.Length <= 1)
+            return; // tek nokta varsa yerinde dolansın
+
         currentIndex += direction;
 
         if (currentIndex >= enemy.PatrolPoints.Length)
@@ -111,6 +133,9 @@ public class PatrolState : EnemyState
 
     private int FindClosestPointIndex()
     {
+        if (enemy.PatrolPoints == null || enemy.PatrolPoints.Length == 0)
+            return 0;
+
         int closest = 0;
         float minDist = float.MaxValue;
 
@@ -123,22 +148,25 @@ public class PatrolState : EnemyState
                 closest = i;
             }
         }
+
         return closest;
     }
 }
 
 public class ChaseState : EnemyState
 {
-    public ChaseState(EnemyController enemy, EnemyStateMachine sm) : base(enemy, sm) { }
+    public ChaseState(EnemyController enemy, EnemyStateMachine sm)
+        : base(enemy, sm) { }
 
     public override void Enter()
     {
         enemy.StopMoving();
-        enemy.SetSpeedMultiplier(1.5f); // %50 daha hızlı örnek
+        enemy.SetSpeedMultiplier(3f);   // Chase hızın
         enemy.PathIndex = 0;
-        enemy.Pathfinder.StartTrackingPlayer(enemy.Player);
-    }
 
+        if (enemy.Player != null)
+            enemy.Pathfinder.StartTrackingPlayer(enemy.Player);
+    }
 
     public override void Exit()
     {
@@ -146,22 +174,47 @@ public class ChaseState : EnemyState
         enemy.Pathfinder.StopTracking();
     }
 
-
     public override void Update()
     {
+        if (enemy.Player == null)
+        {
+            stateMachine.ChangeState(enemy.IdleState);
+            return;
+        }
+
+        // Oyuncu görünmüyorsa → direkt PatrolState
         if (!enemy.IsPlayerVisible())
         {
-            // En yakın checkpoint'e geri dön
-            Vector3 closest = FindClosestCheckpoint();
-            enemy.PathIndex = 0;
-            enemy.Pathfinder.RequestPath(enemy.Transform.position, closest);
-            stateMachine.ChangeState(enemy.PatrolState);
+            enemy.Pathfinder.StopTracking();
+
+            if (enemy.PatrolPoints != null && enemy.PatrolPoints.Length > 0)
+            {
+                Vector3 closest = FindClosestCheckpoint();
+                enemy.PathIndex = 0;
+                enemy.Pathfinder.RequestPath(enemy.Transform.position, closest);
+                stateMachine.ChangeState(enemy.PatrolState);
+            }
+            else
+            {
+                stateMachine.ChangeState(enemy.IdleState);
+            }
+
             return;
+        }
+        else
+        {
+            // Oyuncu görünür ama path yoksa tracking yeniden başlat
+            if (!enemy.Pathfinder.HasPath)
+            {
+                enemy.PathIndex = 0;
+                enemy.Pathfinder.StartTrackingPlayer(enemy.Player);
+            }
         }
 
         if (!enemy.Pathfinder.HasPath)
             return;
 
+        // Path üzerinde ilerle
         if (enemy.PathIndex < enemy.Pathfinder.CurrentPath.Count)
         {
             Vector2 lookTarget = enemy.Pathfinder.CurrentPath[enemy.PathIndex];
@@ -183,6 +236,9 @@ public class ChaseState : EnemyState
 
     private Vector3 FindClosestCheckpoint()
     {
+        if (enemy.PatrolPoints == null || enemy.PatrolPoints.Length == 0)
+            return enemy.Transform.position;
+
         Vector3 closest = enemy.PatrolPoints[0];
         float minDist = Vector3.Distance(enemy.Transform.position, closest);
 
@@ -200,22 +256,30 @@ public class ChaseState : EnemyState
     }
 }
 
+
 public class AttackState : EnemyState
 {
     private float timer;
     private bool hasAttacked;
 
-    public AttackState(EnemyController enemy, EnemyStateMachine stateMachine) : base(enemy, stateMachine) { }
+    public AttackState(EnemyController enemy, EnemyStateMachine stateMachine)
+        : base(enemy, stateMachine) { }
 
     public override void Enter()
     {
-        timer = enemy.Data.attackDelay;
+        timer = enemy.Data != null ? enemy.Data.attackDelay : 0.5f;
         hasAttacked = false;
         enemy.StopMoving();
     }
 
     public override void Update()
     {
+        if (enemy.Player == null)
+        {
+            stateMachine.ChangeState(enemy.IdleState);
+            return;
+        }
+
         if (!enemy.IsInAttackRange())
         {
             stateMachine.ChangeState(enemy.ChaseState);
@@ -231,12 +295,13 @@ public class AttackState : EnemyState
             enemy.PerformAttack();
         }
 
+        // Attack animasyon aralığı gibi küçük bir extra süre
         if (timer <= -0.3f)
         {
-            stateMachine.ChangeState(enemy.IsPlayerVisible() ? enemy.ChaseState : enemy.IdleState);
+            if (enemy.IsPlayerVisible())
+                stateMachine.ChangeState(enemy.ChaseState);
+            else
+                stateMachine.ChangeState(enemy.IdleState);
         }
     }
 }
-
-
-

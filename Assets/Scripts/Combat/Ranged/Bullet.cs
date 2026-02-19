@@ -31,6 +31,11 @@ public class Bullet : MonoBehaviour
             CancelInvoke();
             ReturnToPool();
         }
+        else
+        {
+            CancelInvoke();
+            ReturnToPool();
+        }
     }
 
 

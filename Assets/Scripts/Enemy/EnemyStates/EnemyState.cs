@@ -44,6 +44,9 @@ public class PatrolState : EnemyState
     private int direction = 1;
     private Vector3 currentTarget;
 
+    private const float NodeReachDist = 0.2f;   // node üstünde sayılma eşiği
+    private const float TargetReachDist = 0.35f; // patrol point eşiği (biraz artırdım)
+
     public PatrolState(EnemyController enemy, EnemyStateMachine sm)
         : base(enemy, sm) { }
 
@@ -75,31 +78,58 @@ public class PatrolState : EnemyState
             return;
         }
 
-        if (!enemy.Pathfinder.HasPath)
+        // 1) Eğer hedefe yaklaştıysak -> next target
+        if (IsCloseToTarget())
+        {
+            GoNextTarget();
             return;
-
-        // Path üzerinde ilerle
-        if (enemy.PathIndex < enemy.Pathfinder.CurrentPath.Count)
-        {
-            Vector2 lookTarget = enemy.Pathfinder.CurrentPath[enemy.PathIndex];
-
-            if (enemy.PathIndex + 1 < enemy.Pathfinder.CurrentPath.Count)
-                lookTarget = enemy.Pathfinder.CurrentPath[enemy.PathIndex + 1];
-
-            Vector2 dir = lookTarget - (Vector2)enemy.Transform.position;
-            enemy.RotateTowards(dir);
-            enemy.MoveTowards(enemy.Pathfinder.CurrentPath[enemy.PathIndex]);
-
-            if (Vector2.Distance(enemy.Transform.position, enemy.Pathfinder.CurrentPath[enemy.PathIndex]) < 0.2f)
-                enemy.PathIndex++;
         }
 
-        // Hedef noktaya yeterince yaklaştıysa bir sonrakine geç
-        if (Vector2.Distance(enemy.Transform.position, currentTarget) < 0.3f)
+        // 2) Path yoksa -> yeniden iste (return edip kilitlenme yok)
+        if (!enemy.Pathfinder.HasPath)
         {
-            AdvanceIndex();
-            SetNewTarget();
+            enemy.PathIndex = 0;
+            enemy.Pathfinder.RequestPath(enemy.Transform.position, currentTarget);
+            return;
         }
+
+        var path = enemy.Pathfinder.CurrentPath;
+
+        // 3) Path bitti mi? (İŞTE KİLİT NOKTA)
+        // PathIndex path.Count'a ulaştığında artık "hedefe ulaştık" kabul edip yeni hedefe geçiyoruz.
+        if (enemy.PathIndex >= path.Count)
+        {
+            GoNextTarget();
+            return;
+        }
+
+        // 4) Path node üstünde ilerleme
+        Vector2 currentNode = path[enemy.PathIndex];
+
+        // Look ahead (daha smooth dönüş)
+        Vector2 lookTarget = currentNode;
+        if (enemy.PathIndex + 1 < path.Count)
+            lookTarget = path[enemy.PathIndex + 1];
+
+        Vector2 dir = lookTarget - (Vector2)enemy.Transform.position;
+        enemy.RotateTowards(dir);
+        enemy.MoveTowards(currentNode);
+
+        // Node'a geldiysek bir sonraki node
+        if (((Vector2)enemy.Transform.position - currentNode).sqrMagnitude <= NodeReachDist * NodeReachDist)
+            enemy.PathIndex++;
+    }
+
+    private bool IsCloseToTarget()
+    {
+        return ((Vector2)(enemy.Transform.position - currentTarget)).sqrMagnitude <= TargetReachDist * TargetReachDist;
+    }
+
+    private void GoNextTarget()
+    {
+        enemy.StopMoving();
+        AdvanceIndex();
+        SetNewTarget();
     }
 
     private void SetNewTarget()
@@ -115,10 +145,11 @@ public class PatrolState : EnemyState
     private void AdvanceIndex()
     {
         if (enemy.PatrolPoints.Length <= 1)
-            return; // tek nokta varsa yerinde dolansın
+            return;
 
         currentIndex += direction;
 
+        // Ping-pong (0-1-2-1-0)
         if (currentIndex >= enemy.PatrolPoints.Length)
         {
             currentIndex = enemy.PatrolPoints.Length - 2;
@@ -133,9 +164,6 @@ public class PatrolState : EnemyState
 
     private int FindClosestPointIndex()
     {
-        if (enemy.PatrolPoints == null || enemy.PatrolPoints.Length == 0)
-            return 0;
-
         int closest = 0;
         float minDist = float.MaxValue;
 
@@ -152,7 +180,6 @@ public class PatrolState : EnemyState
         return closest;
     }
 }
-
 public class ChaseState : EnemyState
 {
     public ChaseState(EnemyController enemy, EnemyStateMachine sm)

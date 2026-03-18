@@ -43,11 +43,15 @@ public class PlayerController : MonoBehaviour, IMeleeAttacker, IDamageable
     private SpriteRenderer bodyRenderer;
 
     // Aim
-    private Vector2 aimDirection;         // weaponHoldPoint -> mouse
+    private Camera cachedCam;
+    private Vector2 aimDirection;               // weaponHoldPoint -> mouse
     private bool hasAim;
-    private Vector2 dirToMouseFromPlayer; // player -> mouse (rotation için)
+    private Vector2 dirToMouseFromPlayer;       // player -> mouse
 
     private IWeapon currentWeapon;
+
+    // UI cache
+    private AmmoUI ammoUI;
 
     // =========================
     // Public API
@@ -88,8 +92,16 @@ public class PlayerController : MonoBehaviour, IMeleeAttacker, IDamageable
         if (weaponHoldPoint == null)
             weaponHoldPoint = transform.Find("WeaponHoldPoint");
 
+        isMovedHash = Animator.StringToHash(isMovedParam);
+
         CacheLegsRefs();
         CacheBodyRenderer();
+
+        // Camera cache (main camera unload/load olabilir, Update’te de kontrol ediyoruz)
+        cachedCam = Camera.main;
+
+        // AmmoUI cache (GamePlay HUD içinde olmalı)
+        ammoUI = FindFirstObjectByType<AmmoUI>(); // Unity 2022+ ; eskiyse FindObjectOfType<AmmoUI>()
 
         StateMachine = new PlayerStateMachine();
         IdleState = new PlayerIdleState(this, StateMachine);
@@ -102,11 +114,15 @@ public class PlayerController : MonoBehaviour, IMeleeAttacker, IDamageable
     private void Start()
     {
         StateMachine.Initialize(IdleState);
-        ApplyBodySprite(); // başlangıçta silahsız/silahlı neyse
+        ApplyBodySprite();
     }
 
     private void Update()
     {
+        // Additive geçişlerde kamera değişebilir -> null ise yeniden al
+        if (cachedCam == null)
+            cachedCam = Camera.main;
+
         CacheAimDirection();
         HandleWeaponInteraction();
         UpdateLegsMoveAnimAndRotation();
@@ -127,9 +143,7 @@ public class PlayerController : MonoBehaviour, IMeleeAttacker, IDamageable
     // =========================
     private void CacheLegsRefs()
     {
-        isMovedHash = Animator.StringToHash(isMovedParam);
-
-        Transform legs = FindChildByName(transform, legsObjectName);
+        var legs = FindChildByName(transform, legsObjectName);
         if (legs != null)
         {
             legsTransform = legs;
@@ -141,7 +155,7 @@ public class PlayerController : MonoBehaviour, IMeleeAttacker, IDamageable
     {
         if (legsAnimator == null || legsTransform == null) return;
 
-        Vector2 v = rb.linearVelocity;
+        Vector2 v = rb.velocity;
         float thrSqr = moveAnimThreshold * moveAnimThreshold;
 
         bool isMoving = v.sqrMagnitude > thrSqr;
@@ -149,8 +163,8 @@ public class PlayerController : MonoBehaviour, IMeleeAttacker, IDamageable
 
         if (!isMoving) return;
 
-        // input ile dönsün istiyorsan rb velocity yerine MoveInput kullan:
-        Vector2 input = InputManager.Instance.MoveInput;
+        // Daha iyi his için input yönünü tercih et
+        Vector2 input = InputManager.Instance != null ? InputManager.Instance.MoveInput : Vector2.zero;
         if (input.sqrMagnitude < 0.0001f) input = v;
 
         float angle = Mathf.Atan2(input.y, input.x) * Mathf.Rad2Deg + legsRotationOffset;
@@ -162,7 +176,7 @@ public class PlayerController : MonoBehaviour, IMeleeAttacker, IDamageable
     // =========================
     private void CacheBodyRenderer()
     {
-        Transform body = FindChildByName(transform, bodyObjectName);
+        var body = FindChildByName(transform, bodyObjectName);
         if (body != null)
             bodyRenderer = body.GetComponent<SpriteRenderer>();
     }
@@ -171,7 +185,6 @@ public class PlayerController : MonoBehaviour, IMeleeAttacker, IDamageable
     {
         if (bodyRenderer == null) return;
 
-        // sprite verilmediyse ellemeyelim
         if (HasWeapon)
         {
             if (armedBodySprite != null) bodyRenderer.sprite = armedBodySprite;
@@ -202,21 +215,24 @@ public class PlayerController : MonoBehaviour, IMeleeAttacker, IDamageable
     // =========================
     private void CacheAimDirection()
     {
-        if (Camera.main == null || weaponHoldPoint == null) return;
+        if (cachedCam == null || weaponHoldPoint == null || InputManager.Instance == null)
+        {
+            hasAim = false;
+            return;
+        }
 
-        float depth = -Camera.main.transform.position.z;
+        float depth = -cachedCam.transform.position.z;
 
-        Vector3 mouseWorld = Camera.main.ScreenToWorldPoint(
-            new Vector3(
-                InputManager.Instance.LookInput.x,
-                InputManager.Instance.LookInput.y,
-                depth
-            )
-        );
+        Vector2 look = InputManager.Instance.LookInput;
+        Vector3 mouseWorld = cachedCam.ScreenToWorldPoint(new Vector3(look.x, look.y, depth));
         mouseWorld.z = 0f;
 
         Vector2 fromWeaponToMouse = (Vector2)mouseWorld - (Vector2)weaponHoldPoint.position;
-        if (fromWeaponToMouse.sqrMagnitude < 0.0001f) return;
+        if (fromWeaponToMouse.sqrMagnitude < 0.0001f)
+        {
+            hasAim = false;
+            return;
+        }
 
         aimDirection = fromWeaponToMouse.normalized;
         hasAim = true;
@@ -234,8 +250,7 @@ public class PlayerController : MonoBehaviour, IMeleeAttacker, IDamageable
         Vector2 weaponLocal = weaponHoldPoint.localPosition;
         float weaponLocalAngle = Mathf.Atan2(weaponLocal.y, weaponLocal.x) * Mathf.Rad2Deg;
 
-        float targetAngle = mouseAngle - weaponLocalAngle;
-        rb.rotation = targetAngle;
+        rb.rotation = mouseAngle - weaponLocalAngle;
     }
 
     // =========================
@@ -243,24 +258,24 @@ public class PlayerController : MonoBehaviour, IMeleeAttacker, IDamageable
     // =========================
     private void HandleWeaponInteraction()
     {
-        if (!InputManager.Instance.InteractPressed)
-            return;
+        if (InputManager.Instance == null) return;
+        if (!InputManager.Instance.InteractPressed) return;
 
         InputManager.Instance.ConsumeInteractInput();
 
-        if (HasWeapon)
-            DropWeapon();
-        else
-            TryPickupWeapon();
+        if (HasWeapon) DropWeapon();
+        else TryPickupWeapon();
     }
 
     private void TryPickupWeapon()
     {
+        // Not: OverlapCircleAll alloc yapar. İstersen NonAlloc sürümünü de yazarım.
         Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, pickupRadius);
 
-        foreach (var hit in hits)
+        for (int i = 0; i < hits.Length; i++)
         {
-            if (hit.TryGetComponent(out IWeapon weapon))
+            var hit = hits[i];
+            if (hit != null && hit.TryGetComponent(out IWeapon weapon))
             {
                 EquipWeapon(weapon);
                 break;
@@ -270,6 +285,8 @@ public class PlayerController : MonoBehaviour, IMeleeAttacker, IDamageable
 
     private void EquipWeapon(IWeapon weapon)
     {
+        if (weapon == null) return;
+
         if (currentWeapon != null)
             DropWeapon();
 
@@ -281,7 +298,10 @@ public class PlayerController : MonoBehaviour, IMeleeAttacker, IDamageable
         PlayerEvents.RaiseWeaponPickedUp(weapon.WeaponID);
 
         if (weapon is RangedWeapon ranged)
-            FindObjectOfType<AmmoUI>()?.SetWeapon(ranged);
+        {
+            if (ammoUI == null) ammoUI = FindFirstObjectByType<AmmoUI>();
+            ammoUI?.SetWeapon(ranged);
+        }
     }
 
     private void DropWeapon()
@@ -292,10 +312,12 @@ public class PlayerController : MonoBehaviour, IMeleeAttacker, IDamageable
         PlayerEvents.RaiseWeaponDropped(currentWeapon.WeaponID);
 
         if (currentWeapon is RangedWeapon)
-            FindObjectOfType<AmmoUI>()?.Clear();
+        {
+            if (ammoUI == null) ammoUI = FindFirstObjectByType<AmmoUI>();
+            ammoUI?.Clear();
+        }
 
         currentWeapon = null;
-
         ApplyBodySprite();
     }
 
@@ -306,6 +328,23 @@ public class PlayerController : MonoBehaviour, IMeleeAttacker, IDamageable
     {
         StateMachine.ChangeState(DeadState);
         PlayerEvents.RaisePlayerDied();
+    }
+
+    public void ResetForRestart()
+    {
+        // hareket / fizik temizle
+        rb.velocity = Vector2.zero;
+        rb.angularVelocity = 0f;
+
+        // aim flag reset (opsiyonel ama iyi)
+        hasAim = false;
+        currentWeapon = null;
+
+        // FSM'i yeniden başlat (kritik)
+        StateMachine.Initialize(IdleState);
+
+        // body sprite tekrar uygula (opsiyonel)
+        ApplyBodySprite();
     }
 
     // =========================
@@ -319,7 +358,6 @@ public class PlayerController : MonoBehaviour, IMeleeAttacker, IDamageable
         if (weaponHoldPoint == null) return;
 
         Gizmos.color = Color.red;
-        Vector2 center = (Vector2)weaponHoldPoint.position;
-        Gizmos.DrawWireSphere(center, meleeRadius);
+        Gizmos.DrawWireSphere((Vector2)weaponHoldPoint.position, meleeRadius);
     }
 }

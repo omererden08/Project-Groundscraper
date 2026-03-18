@@ -206,7 +206,6 @@ public class PlayerDeadState : PlayerState
     public override void Enter()
     {
         rb.linearVelocity = Vector2.zero;
-        player.enabled = false;
 
         Collider2D col = player.GetComponent<Collider2D>();
         if (col) col.enabled = false;

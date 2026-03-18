@@ -6,7 +6,7 @@ public class EnemyPathfinder : MonoBehaviour
 {
     [SerializeField] private float pathUpdateInterval = 0.5f;
 
-    private List<Vector2> currentPath = new List<Vector2>();
+    private readonly List<Vector2> currentPath = new List<Vector2>();
     public List<Vector2> CurrentPath => currentPath;
     public bool HasPath => currentPath != null && currentPath.Count > 0;
 
@@ -19,16 +19,16 @@ public class EnemyPathfinder : MonoBehaviour
         var path = AStarPathfinder.FindPath(from, to);
         if (path != null && path.Count > 0)
         {
-            foreach (var node in path)
-                currentPath.Add(node.worldPosition);
-
+            for (int i = 0; i < path.Count; i++)
+                currentPath.Add(path[i].worldPosition);
         }
         else
         {
-            Debug.LogWarning("❌ Path not found!");
+            // Path yoksa boş kalır; PatrolState artık bu durumda takılmayacak.
+            // Debug istersen aç:
+            // Debug.LogWarning("Path not found!");
         }
     }
-
 
     public void StartTrackingPlayer(Transform player)
     {
@@ -38,6 +38,11 @@ public class EnemyPathfinder : MonoBehaviour
         updateRoutine = StartCoroutine(UpdatePathToPlayer(player));
     }
 
+    public void ClearPath()
+    {
+        currentPath.Clear();
+    }
+
     public void StopTracking()
     {
         if (updateRoutine != null)
@@ -45,6 +50,7 @@ public class EnemyPathfinder : MonoBehaviour
             StopCoroutine(updateRoutine);
             updateRoutine = null;
         }
+        ClearPath();
     }
 
     private IEnumerator UpdatePathToPlayer(Transform target)
@@ -69,5 +75,4 @@ public class EnemyPathfinder : MonoBehaviour
             Gizmos.DrawLine(currentPath[i], currentPath[i + 1]);
     }
 #endif
-
 }

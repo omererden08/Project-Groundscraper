@@ -2,21 +2,21 @@
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody2D), typeof(EnemyPathfinder))]
-public class EnemyController : MonoBehaviour, IDamageable, IMeleeAttacker
+public class EnemyController : EnemyBase, IDamageable, IMeleeAttacker
 {
     [Header("Data")]
     [SerializeField] private EnemyData data;
     [SerializeField] private Transform firePoint;
 
     [Header("Patrol Points")]
-    [Tooltip("Sahnedeki bağımsız Checkpoints GameObject'i (child değil!)")]
+    [Tooltip("Boşsa prefab içindeki 'Checkpoints' child'ını arar. Level bazlı patrol için spawn anında override verebilirsin.")]
     [SerializeField] private Transform patrolPointsRoot;
 
     [Header("Debug")]
     [SerializeField] private string currentStateName;
 
     // Runtime
-    private Vector3[] patrolPoints;
+    private Vector3[] patrolPoints = System.Array.Empty<Vector3>();
     private Rigidbody2D rb;
     private Transform player;
     private EnemyPathfinder pathfinder;
@@ -31,7 +31,6 @@ public class EnemyController : MonoBehaviour, IDamageable, IMeleeAttacker
     public float MoveSpeed => currentMoveSpeed;
     public Vector3[] PatrolPoints => patrolPoints;
     public int PathIndex { get; set; }
-
     public Transform Transform => transform;
     public EnemyPathfinder Pathfinder => pathfinder;
 
@@ -39,11 +38,9 @@ public class EnemyController : MonoBehaviour, IDamageable, IMeleeAttacker
     {
         get
         {
-            if (player == null)
-                return transform.up;
-
+            if (player == null) return transform.up;
             Vector2 dir = (Vector2)player.position - (Vector2)transform.position;
-            return dir.sqrMagnitude > 0.0001f ? dir.normalized : transform.up;
+            return dir.sqrMagnitude > 0.0001f ? dir.normalized : (Vector2)transform.up;
         }
     }
 
@@ -60,25 +57,22 @@ public class EnemyController : MonoBehaviour, IDamageable, IMeleeAttacker
     {
         rb = GetComponent<Rigidbody2D>();
         pathfinder = GetComponent<EnemyPathfinder>();
-        player = GameObject.FindGameObjectWithTag("Player")?.transform;
 
         if (data != null)
             currentMoveSpeed = data.moveSpeed;
 
-        // Ranged ise, firePoint assign edilmemişse child içinden bulmayı dene
+        // Ranged ise, firePoint assign edilmemişse child içinden bul
         if (firePoint == null && data != null && data.isRanged)
             firePoint = transform.Find("FirePoint");
 
-        // Patrol noktalarını world position olarak topla
-        List<Vector3> points = new List<Vector3>();
-        if (patrolPointsRoot != null)
+        // Patrol root boşsa prefab içindeki "Checkpoints" child'ını dene
+        if (patrolPointsRoot == null)
         {
-            foreach (Transform child in patrolPointsRoot)
-                points.Add(child.position);
+            var t = transform.Find("Checkpoints");
+            if (t != null) patrolPointsRoot = t;
         }
-        patrolPoints = points.ToArray();
 
-        // FSM
+        // FSM kur (başlatmayı spawn anında yapacağız)
         stateMachine = new EnemyStateMachine();
         IdleState = new IdleState(this, stateMachine);
         PatrolState = new PatrolState(this, stateMachine);
@@ -86,11 +80,72 @@ public class EnemyController : MonoBehaviour, IDamageable, IMeleeAttacker
         AttackState = new AttackState(this, stateMachine);
     }
 
-    private void Start()
+    /// <summary>
+    /// Pool/Spawner spawn anında çağırır.
+    /// Player ve (istersen) level bazlı patrol root burada verilir.
+    /// </summary>
+    public void InitializeForSpawn(Transform playerTransform, Transform overridePatrolRoot = null)
     {
-        // Patrol noktası varsa Patrol, yoksa Idle ile başla
-        stateMachine.Initialize(patrolPoints.Length > 0 ? (EnemyState)PatrolState : IdleState);
+        player = playerTransform;
+
+        if (overridePatrolRoot != null)
+            patrolPointsRoot = overridePatrolRoot;
+
+        patrolPoints = BuildPatrolPoints(patrolPointsRoot);
+
+        // Debug istersen:
+        // Debug.Log($"{name} patrol count = {patrolPoints.Length} root={(patrolPointsRoot ? patrolPointsRoot.name : "null")}");
+    }
+
+    private Vector3[] BuildPatrolPoints(Transform root)
+    {
+        if (root == null) return System.Array.Empty<Vector3>();
+
+        // ✅ nested dahil tüm child'ları topla, root'u hariç tut
+        var list = new List<Transform>();
+        var all = root.GetComponentsInChildren<Transform>(true);
+        for (int i = 0; i < all.Length; i++)
+        {
+            var t = all[i];
+            if (t == root) continue;
+            list.Add(t);
+        }
+
+        // ✅ İsim sıralaması: P0, P1, P2 ... gibi isimlerde doğru rota verir
+        list.Sort((a, b) => string.CompareOrdinal(a.name, b.name));
+
+        var points = new Vector3[list.Count];
+        for (int i = 0; i < list.Count; i++)
+            points[i] = list[i].position;
+
+        return points;
+    }
+
+    protected override void OnSpawned()
+    {
+        isDead = false;
         PathIndex = 0;
+
+        // fizik & path reset
+        rb.linearVelocity = Vector2.zero;
+        pathfinder.StopTracking(); // stop + clear path
+
+        // speed reset
+        if (data != null)
+            currentMoveSpeed = data.moveSpeed;
+
+        // FSM başlat (Start yerine burada)
+        var startState = (patrolPoints != null && patrolPoints.Length > 0)
+            ? (EnemyState)PatrolState
+            : IdleState;
+
+        stateMachine.Initialize(startState);
+    }
+
+    protected override void OnDespawned()
+    {
+        rb.linearVelocity = Vector2.zero;
+        pathfinder.StopTracking();
     }
 
     private void Update()
@@ -126,19 +181,16 @@ public class EnemyController : MonoBehaviour, IDamageable, IMeleeAttacker
         }
 
         dir.Normalize();
-        rb.velocity = dir * currentMoveSpeed;
+        rb.linearVelocity = dir * currentMoveSpeed;
     }
 
-    public void StopMoving() => rb.velocity = Vector2.zero;
+    public void StopMoving() => rb.linearVelocity = Vector2.zero;
 
     public void RotateTowards(Vector2 direction)
     {
         if (direction.sqrMagnitude < 0.0001f) return;
 
-        Quaternion targetRotation = Quaternion.LookRotation(
-            Vector3.forward,
-            direction.normalized
-        );
+        Quaternion targetRotation = Quaternion.LookRotation(Vector3.forward, direction.normalized);
 
         transform.rotation = Quaternion.RotateTowards(
             transform.rotation,
@@ -186,7 +238,7 @@ public class EnemyController : MonoBehaviour, IDamageable, IMeleeAttacker
 
         if (data.isRanged && firePoint != null)
         {
-            var bullet = BulletPool.Instance.GetBullet();
+            var bullet = BulletPool.Instance.GetBullet(data.bulletPrefab);
             bullet.transform.position = firePoint.position;
             bullet.transform.rotation = Quaternion.LookRotation(Vector3.forward, AimDirection);
             bullet.Fire(AimDirection);
@@ -201,59 +253,14 @@ public class EnemyController : MonoBehaviour, IDamageable, IMeleeAttacker
 
     #region Damage / Death
 
-    // IDamageable için muhtemel implementasyon (gerçek arabirime göre düzenle)
     public void Die()
     {
         if (isDead) return;
         isDead = true;
 
-        gameObject.SetActive(false);
-
         StopMoving();
-        //var sr = GetComponent<SpriteRenderer>();
-        //if (sr != null) sr.color = Color.red;
-
-        // İstersen collider kapat, state machine durdur vs.
-        // GetComponent<Collider2D>()?.enabled = false;
+        DespawnToPool();
     }
 
     #endregion
-
-#if UNITY_EDITOR
-    private void OnDrawGizmosSelected()
-    {
-        if (data == null) return;
-
-        // Vision range
-        Gizmos.color = Color.yellow;
-        Gizmos.DrawWireSphere(transform.position, data.visionRange);
-
-        // FOV çizgileri
-        Vector3 left = Quaternion.Euler(0, 0, -data.visionAngle / 2f) * transform.up;
-        Vector3 right = Quaternion.Euler(0, 0, data.visionAngle / 2f) * transform.up;
-
-        Gizmos.color = Color.cyan;
-        Gizmos.DrawLine(transform.position, transform.position + left * data.visionRange);
-        Gizmos.DrawLine(transform.position, transform.position + right * data.visionRange);
-
-        // Patrol noktaları
-        Gizmos.color = Color.green;
-
-        // Editor'de Awake çalışmadan da görebilmek için root'tan oku
-        if (patrolPointsRoot != null)
-        {
-            foreach (Transform child in patrolPointsRoot)
-            {
-                Gizmos.DrawSphere(child.position, 0.15f);
-            }
-        }
-        else if (patrolPoints != null)
-        {
-            foreach (var point in patrolPoints)
-            {
-                Gizmos.DrawSphere(point, 0.15f);
-            }
-        }
-    }
-#endif
 }

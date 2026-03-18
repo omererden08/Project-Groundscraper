@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 09a89f0881818c5459bb1229e030767d, type: 3}
   m_Name: Shotgun
   m_EditorClassIdentifier: Assembly-CSharp::WeaponData
-  weaponID: gun_default
-  bulletPrefab: {fileID: 0}
+  weaponID: Shotgun
+  bulletPrefab: {fileID: 2897616767888490673, guid: 4551128542dfb2d4e9c393be4686ec28, type: 3}
   maxAmmo: 6
   shootForce: 15
   fireRate: 0.3

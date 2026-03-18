@@ -15,7 +15,7 @@ MonoBehaviour:
   moveSpeed: 2
   rotationSpeed: 720
   attackRange: 1.5
-  attackDelay: 0.25
+  attackDelay: 0.0001
   isRanged: 0
   projectilePrefab: {fileID: 2897616767888490673, guid: 4551128542dfb2d4e9c393be4686ec28, type: 3}
   projectileSpeed: 10

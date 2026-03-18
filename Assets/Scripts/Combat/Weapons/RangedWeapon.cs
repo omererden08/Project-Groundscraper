@@ -1,28 +1,32 @@
 ﻿using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody2D))]
-public class RangedWeapon : MonoBehaviour, IWeapon
+public abstract class RangedWeapon : MonoBehaviour, IWeapon
 {
     [Header("Data")]
-    [SerializeField] private WeaponData data;
+    [SerializeField] protected WeaponData data;
 
     [Header("References")]
-    [SerializeField] private Transform firePoint;
+    [SerializeField] protected Transform firePoint;
 
-    private int currentAmmo;
-    private SpriteRenderer spriteRenderer;
+    protected int currentAmmo;
+    protected SpriteRenderer spriteRenderer;
+    protected Rigidbody2D rb;
+    protected Collider2D weaponCollider;
+
+    protected bool isEquipped;
+    protected float lastFireTime;
 
     public int CurrentAmmo => currentAmmo;
-    public int MaxAmmo => data.maxAmmo;
-
-    public string WeaponID => data.weaponID;
+    public int MaxAmmo => data != null ? data.maxAmmo : 0;
+    public string WeaponID => data != null ? data.weaponID : string.Empty;
     public bool IsRanged => true;
 
-    private void Awake()
+    protected virtual void Awake()
     {
         if (data == null)
         {
-            Debug.LogError("❌ WeaponData not assigned.");
+            Debug.LogError($"{name}: WeaponData not assigned.");
             enabled = false;
             return;
         }
@@ -31,66 +35,93 @@ public class RangedWeapon : MonoBehaviour, IWeapon
             firePoint = transform.Find("FirePoint");
 
         if (firePoint == null)
-            Debug.LogError("❌ FirePoint not found!");
+            Debug.LogError($"{name}: FirePoint not found!");
 
         currentAmmo = data.maxAmmo;
+
         spriteRenderer = GetComponent<SpriteRenderer>();
-    }
+        rb = GetComponent<Rigidbody2D>();
+        weaponCollider = GetComponent<Collider2D>();
 
-    private void OnEnable()
-    {
-        PlayerEvents.OnShoot += HandleShoot;
-    }
-
-    private void OnDisable()
-    {
-        PlayerEvents.OnShoot -= HandleShoot;
+        Debug.Log($"{name}: Awake | weaponID={WeaponID} | bulletPrefab={(data.bulletPrefab != null ? data.bulletPrefab.name : "NULL")}");
     }
 
     private void HandleShoot(Vector2 position, Vector2 direction)
     {
-        // Sadece elde takılıysa ateş et
-        if (transform.parent == null)
+        if (!isEquipped)
             return;
 
+        Debug.Log($"{name}: HandleShoot");
         Use(direction);
     }
 
-    // 🔫 TEK VE NET USE
+    public void Use()
+    {
+        if (firePoint == null)
+        {
+            Debug.LogWarning($"{name}: Use() cancelled, firePoint is null.");
+            return;
+        }
+
+        Use(firePoint.right);
+    }
+
     public void Use(Vector2 direction)
     {
+        if (!isEquipped)
+        {
+            Debug.LogWarning($"{name}: Use() cancelled, weapon not equipped.");
+            return;
+        }
+
+        if (data != null && Time.time < lastFireTime + data.fireRate)
+            return;
+
         if (currentAmmo <= 0)
         {
-            Debug.Log("❌ No Ammo! Throwing weapon.");
+            Debug.Log($"{name}: No Ammo! Throwing weapon.");
             ThrowAsProjectile(direction);
             return;
         }
 
-        var bullet = BulletPool.Instance.GetBullet();
-        bullet.transform.position = firePoint.position;
-        bullet.transform.rotation = Quaternion.LookRotation(Vector3.forward, direction);
+        if (firePoint == null)
+        {
+            Debug.LogWarning($"{name}: FirePoint missing.");
+            return;
+        }
 
-        bullet.Fire(direction);
+        Debug.Log($"{name}: Fire() çağrılıyor | ammo={currentAmmo} | bulletPrefab={(data != null && data.bulletPrefab != null ? data.bulletPrefab.name : "NULL")}");
 
-        currentAmmo--;
-        Debug.Log($"🔫 Fired | Ammo left: {currentAmmo}");
+        Fire(direction.normalized);
+        ConsumeAmmo(1);
+        OnAmmoChanged();
+
+        lastFireTime = Time.time;
     }
 
-    // Interface uyumu için
-    public void Use()
+    protected abstract void Fire(Vector2 direction);
+
+    protected virtual void ConsumeAmmo(int amount)
     {
-        Use(firePoint.right);
+        currentAmmo = Mathf.Max(0, currentAmmo - amount);
     }
 
-    private void ThrowAsProjectile(Vector2 direction)
+    protected virtual void OnAmmoChanged()
     {
+        Debug.Log($"{name} Fired | Ammo left: {currentAmmo}");
+    }
+
+    protected virtual void ThrowAsProjectile(Vector2 direction)
+    {
+        isEquipped = false;
+        PlayerEvents.OnShoot -= HandleShoot;
+
         transform.SetParent(null);
 
-        var col = GetComponent<Collider2D>();
-        if (col) col.enabled = true;
+        if (weaponCollider != null)
+            weaponCollider.enabled = true;
 
-        var rb = GetComponent<Rigidbody2D>();
-        if (rb)
+        if (rb != null)
         {
             rb.isKinematic = false;
             rb.linearVelocity = Vector2.zero;
@@ -100,35 +131,93 @@ public class RangedWeapon : MonoBehaviour, IWeapon
             rb.linearDamping = data.drag;
             rb.angularDamping = data.drag;
         }
+
         PlayerEvents.RaiseWeaponDropped(WeaponID);
-        
+
         AmmoUI ammoUI = FindObjectOfType<AmmoUI>();
         if (ammoUI != null)
             ammoUI.Clear();
-
     }
 
-    public void OnEquip(Transform holder)
+    public virtual void OnEquip(Transform holder)
     {
         transform.SetParent(holder);
         transform.localPosition = Vector3.zero;
         transform.localRotation = Quaternion.identity;
-        
-        var rb = GetComponent<Rigidbody2D>();
-        if (rb)
+
+        if (rb != null)
         {
             rb.linearVelocity = Vector2.zero;
+            rb.angularVelocity = 0f;
             rb.isKinematic = true;
         }
 
-        var col = GetComponent<Collider2D>();
-        if (col) col.enabled = false;
-        spriteRenderer.enabled = false;
+        if (weaponCollider != null)
+            weaponCollider.enabled = false;
+
+        if (spriteRenderer != null)
+            spriteRenderer.enabled = false;
+
+        isEquipped = true;
+
+        PlayerEvents.OnShoot -= HandleShoot;
+        PlayerEvents.OnShoot += HandleShoot;
+
+        Debug.Log($"{name}: Equipped | weaponID={WeaponID} | bulletPrefab={(data != null && data.bulletPrefab != null ? data.bulletPrefab.name : "NULL")}");
     }
 
-    public void OnDrop(Vector2 direction)
+    public virtual void OnDrop(Vector2 direction)
     {
+        isEquipped = false;
+        PlayerEvents.OnShoot -= HandleShoot;
+
         ThrowAsProjectile(direction);
-        spriteRenderer.enabled = true;
+
+        if (spriteRenderer != null)
+            spriteRenderer.enabled = true;
+    }
+
+    protected Bullet SpawnBullet(Vector2 direction)
+    {
+        if (data == null)
+        {
+            Debug.LogError($"{name}: SpawnBullet failed, data is null.");
+            return null;
+        }
+
+        if (data.bulletPrefab == null)
+        {
+            Debug.LogError($"{name}: Bullet prefab is missing in WeaponData.");
+            return null;
+        }
+
+        if (firePoint == null)
+        {
+            Debug.LogError($"{name}: SpawnBullet failed, firePoint is null.");
+            return null;
+        }
+
+        if (BulletPool.Instance == null)
+        {
+            Debug.LogError($"{name}: BulletPool.Instance is null.");
+            return null;
+        }
+
+        var bullet = BulletPool.Instance.GetBullet(data.bulletPrefab);
+
+        if (bullet == null)
+        {
+            Debug.LogError($"{name}: BulletPool returned null for prefab {data.bulletPrefab.name}.");
+            return null;
+        }
+
+        bullet.transform.position = firePoint.position;
+        bullet.transform.rotation = Quaternion.LookRotation(Vector3.forward, direction);
+
+        bullet.SetOwner(transform.root.gameObject);   // <-- eksik olan buydu
+        bullet.Fire(direction);
+
+        Debug.Log($"{name}: Bullet spawned -> {bullet.name}");
+        return bullet;
     }
 }

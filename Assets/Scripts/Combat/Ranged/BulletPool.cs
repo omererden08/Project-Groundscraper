@@ -1,43 +1,67 @@
-﻿using UnityEngine;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 public class BulletPool : MonoBehaviour
 {
     public static BulletPool Instance;
 
-    [SerializeField] private Bullet bulletPrefab;
-    [SerializeField] private int poolSize = 20;
-
-    private Queue<Bullet> pool = new Queue<Bullet>();
-    private Transform container;
+    private readonly Dictionary<GameObject, Queue<Bullet>> pools = new();
 
     private void Awake()
     {
-        Instance = this;
-        container = new GameObject("BulletPool_Container").transform;
-        container.SetParent(this.transform);
+        if (Instance == null)
+            Instance = this;
+        else
+            Destroy(gameObject);
+    }
 
-        for (int i = 0; i < poolSize; i++)
+    public Bullet GetBullet(GameObject bulletPrefab)
+    {
+        if (bulletPrefab == null)
         {
-            Bullet b = Instantiate(bulletPrefab, container);
-            b.gameObject.SetActive(false);
-            pool.Enqueue(b);
+            Debug.LogError("BulletPool: bulletPrefab is null.");
+            return null;
         }
+
+        if (!pools.ContainsKey(bulletPrefab))
+            pools[bulletPrefab] = new Queue<Bullet>();
+
+        Queue<Bullet> pool = pools[bulletPrefab];
+
+        while (pool.Count > 0)
+        {
+            Bullet bullet = pool.Dequeue();
+
+            if (bullet != null)
+            {
+                bullet.gameObject.SetActive(true);
+                return bullet;
+            }
+        }
+
+        GameObject bulletObject = Instantiate(bulletPrefab);
+        Bullet newBullet = bulletObject.GetComponent<Bullet>();
+
+        if (newBullet == null)
+        {
+            Debug.LogError($"{bulletPrefab.name} prefabinde Bullet component yok.");
+            Destroy(bulletObject);
+            return null;
+        }
+
+        newBullet.SetPool(this, bulletPrefab);
+        return newBullet;
     }
 
-    public Bullet GetBullet()
+    public void ReturnBullet(Bullet bullet, GameObject bulletPrefab)
     {
-        if (pool.Count > 0)
-            return pool.Dequeue();
+        if (bullet == null || bulletPrefab == null)
+            return;
 
-        Debug.LogWarning("Bullet pool exhausted!");
-        return Instantiate(bulletPrefab);
-    }
+        if (!pools.ContainsKey(bulletPrefab))
+            pools[bulletPrefab] = new Queue<Bullet>();
 
-    public void ReturnBullet(Bullet bullet)
-    {
         bullet.gameObject.SetActive(false);
-        bullet.transform.SetParent(container);
-        pool.Enqueue(bullet);
+        pools[bulletPrefab].Enqueue(bullet);
     }
 }

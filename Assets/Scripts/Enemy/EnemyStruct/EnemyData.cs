@@ -16,4 +16,6 @@ public class EnemyData : ScriptableObject
     [Header("Vision Settings")]
     public float visionAngle = 90f;
     public float visionRange = 8f;
+
+    public GameObject bulletPrefab;
 }

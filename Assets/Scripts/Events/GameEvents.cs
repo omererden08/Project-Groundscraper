@@ -20,7 +20,11 @@ public static class GameEvents
     public static event Action<string> OnSceneLoadRequested;
     public static event Action<string> OnSceneLoadStarted;
     public static event Action<string> OnSceneLoadCompleted;
+    public static event Action<string> OnLevelLoadRequested;
+    public static event Action<string> OnLevelLoaded;
 
+    public static void RaiseLevelLoadRequested(string levelId) => OnLevelLoadRequested?.Invoke(levelId);
+    public static void RaiseLevelLoaded(string levelId) => OnLevelLoaded?.Invoke(levelId);
     public static void RaiseGameStateChanged(GameState state) => OnGameStateChanged?.Invoke(state);
     public static void RaiseGamePaused() => OnGamePaused?.Invoke();
     public static void RaiseGameResumed() => OnGameResumed?.Invoke();

@@ -40,6 +40,7 @@ public class InputManager : MonoBehaviour
 
     }
 
+
     private void Update()
     {
         MoveInput = inputActions.Player.Move.ReadValue<Vector2>();

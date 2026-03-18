@@ -1,47 +1,78 @@
 ﻿using UnityEngine;
 
+[RequireComponent(typeof(Rigidbody2D))]
 public class Bullet : MonoBehaviour
 {
-    [SerializeField] private float speed = 20f;
-    [SerializeField] private float lifeTime = 3f;
+    [SerializeField] private float speed = 15f;
+    [SerializeField] private int damage = 1;
 
+    private BulletPool pool;
+    private GameObject sourcePrefab;
     private Rigidbody2D rb;
+
+    private bool isActiveBullet;
+    private GameObject owner;
 
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
     }
 
+    public void SetPool(BulletPool bulletPool, GameObject prefab)
+    {
+        pool = bulletPool;
+        sourcePrefab = prefab;
+    }
+
+    public void SetOwner(GameObject newOwner)
+    {
+        owner = newOwner;
+    }
+
     public void Fire(Vector2 direction)
     {
-        CancelInvoke(); // Önceki çağrıları temizle
+        isActiveBullet = true;
 
-        gameObject.SetActive(true);
-        rb.linearVelocity = direction.normalized * speed;
+        if (rb == null)
+            rb = GetComponent<Rigidbody2D>();
 
-        // Sadece zamanlayıcı başlat — çarpmadıysa bu çalışır
-        Invoke(nameof(ReturnToPool), lifeTime);
-    }
-
-    private void OnTriggerEnter2D(Collider2D collision)
-    {
-        if (collision.TryGetComponent(out IDamageable damageable))
-        {
-            damageable.Die();
-            CancelInvoke();
-            ReturnToPool();
-        }
-        else
-        {
-            CancelInvoke();
-            ReturnToPool();
-        }
-    }
-
-
-    private void ReturnToPool()
-    {
         rb.linearVelocity = Vector2.zero;
-        BulletPool.Instance.ReturnBullet(this);
+        rb.angularVelocity = 0f;
+        rb.linearVelocity = direction.normalized * speed;
+    }
+
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        if (!isActiveBullet)
+            return;
+
+        if (owner != null && other.transform.root.gameObject == owner)
+            return;
+
+        Debug.Log($"{name} hit -> {other.name}");
+
+        IDamageable damageable = other.GetComponent<IDamageable>();
+
+        if (damageable != null)
+            damageable.Die();
+
+        ReturnToPool();
+    }
+
+    public void ReturnToPool()
+    {
+        isActiveBullet = false;
+        owner = null;
+
+        if (rb != null)
+        {
+            rb.linearVelocity = Vector2.zero;
+            rb.angularVelocity = 0f;
+        }
+
+        if (pool != null)
+            pool.ReturnBullet(this, sourcePrefab);
+        else
+            gameObject.SetActive(false);
     }
 }

@@ -19,16 +19,6 @@ public class GameManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
     }
 
-    private void OnEnable()
-    {
-        GameEvents.OnSceneLoadCompleted += HandleSceneLoadCompleted;
-    }
-
-    private void OnDisable()
-    {
-        GameEvents.OnSceneLoadCompleted -= HandleSceneLoadCompleted;
-    }
-
     public void SetGameState(GameState newState)
     {
         if (currentState == newState) return;
@@ -54,18 +44,9 @@ public class GameManager : MonoBehaviour
                 break;
 
             case GameState.Cutscene:
-                Time.timeScale = 1f;
-                break;
-
             case GameState.MainMenu:
                 Time.timeScale = 1f;
                 break;
         }
-    }
-
-    private void HandleSceneLoadCompleted(string sceneName)
-    {
-        // Oyun sahnesine geçiş sonrası state kontrolü burada yapılmaz.
-        // State geçişi LevelTransitionController'dan yapılır.
     }
 }

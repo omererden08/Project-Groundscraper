@@ -11,6 +11,8 @@ public class Shotgun : RangedWeapon
     [SerializeField] private bool centerWeightedSpread = true;
     [SerializeField] private int pelletCountVariation = 1;
 
+    public override bool IsAutomatic => false;
+
     protected override void Fire(Vector2 direction)
     {
         int finalPelletCount = pelletCount;

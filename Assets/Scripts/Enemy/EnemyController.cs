@@ -16,6 +16,8 @@ public class EnemyController : EnemyBase, IDamageable, IMeleeAttacker
     [SerializeField] private string currentStateName;
 
     // Runtime
+    private Vector3 rememberedPlayerPosition;
+    private bool hasRememberedPlayerPosition;
     private Vector3[] patrolPoints = System.Array.Empty<Vector3>();
     private Rigidbody2D rb;
     private Transform player;
@@ -46,6 +48,19 @@ public class EnemyController : EnemyBase, IDamageable, IMeleeAttacker
 
     public float MeleeRange => data != null ? data.attackRange : 1f;
     public float MeleeRadius => 0.8f;
+    public Vector3 RememberedPlayerPosition => rememberedPlayerPosition;
+    public bool HasRememberedPlayerPosition => hasRememberedPlayerPosition;
+
+    public void RememberPlayerPosition(Vector3 pos)
+    {
+        rememberedPlayerPosition = pos;
+        hasRememberedPlayerPosition = true;
+    }
+
+    public void ClearRememberedPlayerPosition()
+    {
+        hasRememberedPlayerPosition = false;
+    }
 
     // States
     public IdleState IdleState { get; private set; }
@@ -125,16 +140,14 @@ public class EnemyController : EnemyBase, IDamageable, IMeleeAttacker
     {
         isDead = false;
         PathIndex = 0;
+        ClearRememberedPlayerPosition();
 
-        // fizik & path reset
         rb.linearVelocity = Vector2.zero;
-        pathfinder.StopTracking(); // stop + clear path
+        pathfinder.StopTracking();
 
-        // speed reset
         if (data != null)
             currentMoveSpeed = data.moveSpeed;
 
-        // FSM başlat (Start yerine burada)
         var startState = (patrolPoints != null && patrolPoints.Length > 0)
             ? (EnemyState)PatrolState
             : IdleState;

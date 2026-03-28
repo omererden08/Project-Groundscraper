@@ -182,23 +182,33 @@ public class PatrolState : EnemyState
 }
 public class ChaseState : EnemyState
 {
+    private bool goingToRememberedPosition;
+    private const float ReachDist = 0.35f;
+
     public ChaseState(EnemyController enemy, EnemyStateMachine sm)
         : base(enemy, sm) { }
 
     public override void Enter()
     {
         enemy.StopMoving();
-        enemy.SetSpeedMultiplier(3f);   // Chase hızın
+        enemy.SetSpeedMultiplier(3f);
         enemy.PathIndex = 0;
 
+        goingToRememberedPosition = false;
+
         if (enemy.Player != null)
+        {
+            // Oyuncuyu ilk gördüğü anda pozisyonunu kaydet
+            enemy.RememberPlayerPosition(enemy.Player.position);
             enemy.Pathfinder.StartTrackingPlayer(enemy.Player);
+        }
     }
 
     public override void Exit()
     {
         enemy.ResetSpeed();
         enemy.Pathfinder.StopTracking();
+        goingToRememberedPosition = false;
     }
 
     public override void Update()
@@ -209,39 +219,64 @@ public class ChaseState : EnemyState
             return;
         }
 
-        // Oyuncu görünmüyorsa → direkt PatrolState
-        if (!enemy.IsPlayerVisible())
+        // Oyuncu tekrar görünüyorsa normal chase'e dön
+        if (enemy.IsPlayerVisible())
         {
-            enemy.Pathfinder.StopTracking();
-
-            if (enemy.PatrolPoints != null && enemy.PatrolPoints.Length > 0)
+            if (goingToRememberedPosition)
             {
-                Vector3 closest = FindClosestCheckpoint();
+                goingToRememberedPosition = false;
                 enemy.PathIndex = 0;
-                enemy.Pathfinder.RequestPath(enemy.Transform.position, closest);
-                stateMachine.ChangeState(enemy.PatrolState);
+                enemy.Pathfinder.StartTrackingPlayer(enemy.Player);
             }
-            else
-            {
-                stateMachine.ChangeState(enemy.IdleState);
-            }
-
-            return;
-        }
-        else
-        {
-            // Oyuncu görünür ama path yoksa tracking yeniden başlat
-            if (!enemy.Pathfinder.HasPath)
+            else if (!enemy.Pathfinder.HasPath)
             {
                 enemy.PathIndex = 0;
                 enemy.Pathfinder.StartTrackingPlayer(enemy.Player);
+            }
+        }
+        else
+        {
+            // Görünürlük kaybedildiyse:
+            // tracking'i durdur, önce hatırlanan noktaya git
+            if (!goingToRememberedPosition && enemy.HasRememberedPlayerPosition)
+            {
+                goingToRememberedPosition = true;
+                enemy.Pathfinder.StopTracking();
+                enemy.PathIndex = 0;
+                enemy.Pathfinder.RequestPath(enemy.Transform.position, enemy.RememberedPlayerPosition);
+            }
+
+            // Hatırlanan noktaya ulaştıysa patrol/idle'a dön
+            if (goingToRememberedPosition)
+            {
+                float sqrDist = ((Vector2)enemy.Transform.position - (Vector2)enemy.RememberedPlayerPosition).sqrMagnitude;
+                if (sqrDist <= ReachDist * ReachDist)
+                {
+                    enemy.StopMoving();
+                    enemy.ClearRememberedPlayerPosition();
+
+                    if (enemy.PatrolPoints != null && enemy.PatrolPoints.Length > 0)
+                        stateMachine.ChangeState(enemy.PatrolState);
+                    else
+                        stateMachine.ChangeState(enemy.IdleState);
+
+                    return;
+                }
+            }
+            else
+            {
+                if (enemy.PatrolPoints != null && enemy.PatrolPoints.Length > 0)
+                    stateMachine.ChangeState(enemy.PatrolState);
+                else
+                    stateMachine.ChangeState(enemy.IdleState);
+
+                return;
             }
         }
 
         if (!enemy.Pathfinder.HasPath)
             return;
 
-        // Path üzerinde ilerle
         if (enemy.PathIndex < enemy.Pathfinder.CurrentPath.Count)
         {
             Vector2 lookTarget = enemy.Pathfinder.CurrentPath[enemy.PathIndex];
@@ -257,33 +292,11 @@ public class ChaseState : EnemyState
                 enemy.PathIndex++;
         }
 
-        if (enemy.IsInAttackRange())
+        // Sadece oyuncu görünüyorsa attack'a geç
+        if (enemy.IsPlayerVisible() && enemy.IsInAttackRange())
             stateMachine.ChangeState(enemy.AttackState);
     }
-
-    private Vector3 FindClosestCheckpoint()
-    {
-        if (enemy.PatrolPoints == null || enemy.PatrolPoints.Length == 0)
-            return enemy.Transform.position;
-
-        Vector3 closest = enemy.PatrolPoints[0];
-        float minDist = Vector3.Distance(enemy.Transform.position, closest);
-
-        foreach (var point in enemy.PatrolPoints)
-        {
-            float dist = Vector3.Distance(enemy.Transform.position, point);
-            if (dist < minDist)
-            {
-                minDist = dist;
-                closest = point;
-            }
-        }
-
-        return closest;
-    }
 }
-
-
 public class AttackState : EnemyState
 {
     private float timer;

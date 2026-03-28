@@ -7,28 +7,59 @@ public abstract class EnemyBase : MonoBehaviour
     public EnemyType Type => type;
 
     private EnemyPool ownerPool;
+    private bool isRegisteredToStage;
 
-    public void InitPool(EnemyPool pool) => ownerPool = pool;
+    public void InitPool(EnemyPool pool)
+    {
+        ownerPool = pool;
+    }
 
-    // Pool/Spawner bunu çaðýracak
     public void SpawnedFromPool()
     {
+        isRegisteredToStage = false;
+
         gameObject.SetActive(true);
         OnSpawned();
     }
 
-    // Enemy ölünce vs çaðýr
-    public void DespawnToPool()
+    public void RegisterToStage()
     {
-        if (ownerPool != null) ownerPool.Despawn(this);
-        else gameObject.SetActive(false);
+        if (isRegisteredToStage)
+            return;
+
+        if (StageClearManager.Instance != null)
+        {
+            StageClearManager.Instance.RegisterEnemy(this);
+            isRegisteredToStage = true;
+        }
     }
 
-    // Pool çaðýrýr
+    public void DespawnToPool()
+    {
+        UnregisterFromStageIfNeeded();
+
+        if (ownerPool != null)
+            ownerPool.Despawn(this);
+        else
+            gameObject.SetActive(false);
+    }
+
     public void DespawnedToPool()
     {
         OnDespawned();
+        isRegisteredToStage = false;
         gameObject.SetActive(false);
+    }
+
+    private void UnregisterFromStageIfNeeded()
+    {
+        if (!isRegisteredToStage)
+            return;
+
+        if (StageClearManager.Instance != null)
+            StageClearManager.Instance.UnregisterEnemy(this);
+
+        isRegisteredToStage = false;
     }
 
     protected virtual void OnSpawned() { }

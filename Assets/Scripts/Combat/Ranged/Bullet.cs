@@ -49,7 +49,6 @@ public class Bullet : MonoBehaviour
         if (owner != null && other.transform.root.gameObject == owner)
             return;
 
-        Debug.Log($"{name} hit -> {other.name}");
 
         IDamageable damageable = other.GetComponent<IDamageable>();
 

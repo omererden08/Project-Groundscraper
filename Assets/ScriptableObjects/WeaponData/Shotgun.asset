@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WeaponData
   weaponID: Shotgun
   bulletPrefab: {fileID: 2897616767888490673, guid: 4551128542dfb2d4e9c393be4686ec28, type: 3}
-  maxAmmo: 6
+  maxAmmo: 100
   shootForce: 15
   fireRate: 0.3
   dropForce: 6

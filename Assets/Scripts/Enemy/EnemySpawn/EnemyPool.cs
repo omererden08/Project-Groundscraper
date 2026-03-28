@@ -7,85 +7,126 @@ public class EnemyPool : MonoBehaviour
     public class PoolEntry
     {
         public EnemyType type;
-        public EnemyBase prefab;
-        [Min(0)] public int prewarm = 8;
+        public EnemyController prefab;
+        public int initialSize = 5;
     }
 
+    [Header("Pool Config")]
     [SerializeField] private PoolEntry[] entries;
 
-    private readonly Dictionary<EnemyType, Queue<EnemyBase>> pool = new();
-    private readonly Dictionary<EnemyType, EnemyBase> prefabMap = new();
-    private readonly HashSet<EnemyBase> alive = new();
+    private readonly Dictionary<EnemyType, Queue<EnemyController>> pools = new();
+    private readonly List<EnemyController> aliveEnemies = new();
 
     private void Awake()
     {
-        foreach (var e in entries)
+        for (int i = 0; i < entries.Length; i++)
         {
-            if (e.prefab == null) continue;
+            PoolEntry entry = entries[i];
 
-            prefabMap[e.type] = e.prefab;
-            pool[e.type] = new Queue<EnemyBase>(e.prewarm);
+            if (entry == null || entry.prefab == null)
+                continue;
 
-            for (int i = 0; i < e.prewarm; i++)
+            if (!pools.ContainsKey(entry.type))
+                pools.Add(entry.type, new Queue<EnemyController>());
+
+            for (int j = 0; j < entry.initialSize; j++)
             {
-                var inst = Instantiate(e.prefab, transform);
-                inst.InitPool(this);
-                inst.DespawnedToPool(); // OnDespawned + disable
-                pool[e.type].Enqueue(inst);
+                EnemyController enemy = Create(entry.prefab);
+                pools[entry.type].Enqueue(enemy);
             }
         }
     }
 
-    public EnemyBase Spawn(EnemyType type, Vector3 pos, Quaternion rot, Transform parent, Transform player, Transform patrolRootOverride = null)
+    private EnemyController Create(EnemyController prefab)
     {
-        if (!prefabMap.TryGetValue(type, out var prefab))
-        {
-            Debug.LogError($"EnemyPool: Prefab yok -> {type}");
-            return null;
-        }
-
-        EnemyBase enemy = (pool.TryGetValue(type, out var q) && q.Count > 0)
-            ? q.Dequeue()
-            : Instantiate(prefab, transform);
-
+        EnemyController enemy = Instantiate(prefab, transform);
         enemy.InitPool(this);
-
-        enemy.transform.SetParent(parent, true);
-        enemy.transform.SetPositionAndRotation(pos, rot);
-
-        // inject
-        var controller = enemy.GetComponent<EnemyController>();
-        if (controller != null)
-            controller.InitializeForSpawn(player, patrolRootOverride);
-
-        enemy.SpawnedFromPool(); // enable + OnSpawned
-
-        alive.Add(enemy);
+        enemy.gameObject.SetActive(false);
         return enemy;
     }
 
-    public void Despawn(EnemyBase enemy)
+    public EnemyBase Spawn(
+        EnemyType type,
+        Vector3 position,
+        Quaternion rotation,
+        Transform parent,
+        Transform player,
+        Transform patrolRootOverride)
     {
-        if (enemy == null) return;
+        if (!pools.TryGetValue(type, out Queue<EnemyController> queue))
+        {
+            Debug.LogError($"EnemyPool: {type} için pool bulunamadı.");
+            return null;
+        }
 
-        alive.Remove(enemy);
+        EnemyController enemy;
 
-        var type = enemy.Type;
-        enemy.transform.SetParent(transform, true);
-        enemy.DespawnedToPool(); // OnDespawned + disable
+        if (queue.Count > 0)
+        {
+            enemy = queue.Dequeue();
+        }
+        else
+        {
+            EnemyController prefab = GetPrefab(type);
 
-        if (!pool.TryGetValue(type, out var q))
-            pool[type] = q = new Queue<EnemyBase>();
+            if (prefab == null)
+            {
+                Debug.LogError($"EnemyPool: {type} için prefab bulunamadı.");
+                return null;
+            }
 
-        q.Enqueue(enemy);
+            enemy = Create(prefab);
+        }
+
+        enemy.transform.SetParent(parent);
+        enemy.transform.SetPositionAndRotation(position, rotation);
+
+        enemy.InitializeForSpawn(player, patrolRootOverride);
+        enemy.SpawnedFromPool();
+
+        aliveEnemies.Add(enemy);
+        return enemy;
+    }
+
+    public void Despawn(EnemyBase enemyBase)
+    {
+        if (enemyBase == null)
+            return;
+
+        EnemyController enemy = enemyBase as EnemyController;
+        if (enemy == null)
+            return;
+
+        aliveEnemies.Remove(enemy);
+
+        enemy.DespawnedToPool();
+
+        if (!pools.ContainsKey(enemy.Type))
+            pools.Add(enemy.Type, new Queue<EnemyController>());
+
+        pools[enemy.Type].Enqueue(enemy);
     }
 
     public void DespawnAllAlive()
     {
-        var temp = new List<EnemyBase>(alive);
-        for (int i = 0; i < temp.Count; i++)
-            Despawn(temp[i]);
+        for (int i = aliveEnemies.Count - 1; i >= 0; i--)
+        {
+            EnemyController enemy = aliveEnemies[i];
+            if (enemy != null)
+                enemy.DespawnToPool();
+        }
 
-        alive.Clear();
+        aliveEnemies.Clear();
+    }
+
+    private EnemyController GetPrefab(EnemyType type)
+    {
+        for (int i = 0; i < entries.Length; i++)
+        {
+            if (entries[i].type == type)
+                return entries[i].prefab;
+        }
+
+        return null;
     }
 }

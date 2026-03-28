@@ -14,21 +14,19 @@ public class EnemySpawner : MonoBehaviour
     {
         if (enemiesRoot == null)
         {
-            var go = new GameObject("EnemiesRoot");
+            GameObject go = new GameObject("EnemiesRoot");
             enemiesRoot = go.transform;
         }
 
         if (player == null)
         {
-            var p = GameObject.FindGameObjectWithTag("Player");
-            if (p != null) player = p.transform;
+            GameObject p = GameObject.FindGameObjectWithTag("Player");
+            if (p != null)
+                player = p.transform;
         }
 
         if (pool == null)
-        {
             pool = FindFirstObjectByType<EnemyPool>();
-
-        }
     }
 
     private void OnEnable()
@@ -45,76 +43,91 @@ public class EnemySpawner : MonoBehaviour
     {
         if (pool == null)
         {
-            Debug.LogError("EnemySpawner: EnemyPool referansý yok!");
+            Debug.LogError("EnemySpawner: EnemyPool referansý yok.");
             return;
         }
 
-        // 1) Eski düþmanlarý temizle
+        if (StageClearManager.Instance != null)
+            StageClearManager.Instance.ResetStage();
+
         pool.DespawnAllAlive();
 
-        // 2) Yeni level spawnlarýný baþlat
-        if (spawnRoutine != null) StopCoroutine(spawnRoutine);
+        if (spawnRoutine != null)
+            StopCoroutine(spawnRoutine);
+
         spawnRoutine = StartCoroutine(SpawnFromCurrentLevelRoutine());
     }
 
     private IEnumerator SpawnFromCurrentLevelRoutine()
     {
-        yield return null; // instantiate sonrasý 1 frame güvenli
+        yield return null;
 
         if (LevelLoader.Instance == null || LevelLoader.Instance.CurrentLevelInstance == null)
         {
-            Debug.LogError("EnemySpawner: LevelLoader veya CurrentLevelInstance null!");
+            Debug.LogError("EnemySpawner: LevelLoader veya CurrentLevelInstance null.");
             yield break;
         }
 
         if (player == null)
         {
-            var p = GameObject.FindGameObjectWithTag("Player");
-            if (p != null) player = p.transform;
+            GameObject p = GameObject.FindGameObjectWithTag("Player");
+            if (p != null)
+                player = p.transform;
         }
 
         if (player == null)
         {
-            Debug.LogError("EnemySpawner: Player bulunamadý! Player tag var mý?");
+            Debug.LogError("EnemySpawner: Player bulunamadý. Player tag kontrol et.");
             yield break;
         }
 
-        var levelGo = LevelLoader.Instance.CurrentLevelInstance;
-
-        // SADECE bu level instance içinden spawn point topla (FindObjectsOfType YOK)
-        var spawns = levelGo.GetComponentsInChildren<EnemySpawnPoint>(true);
+        GameObject levelGo = LevelLoader.Instance.CurrentLevelInstance;
+        EnemySpawnPoint[] spawns = levelGo.GetComponentsInChildren<EnemySpawnPoint>(true);
 
         for (int i = 0; i < spawns.Length; i++)
         {
-            var sp = spawns[i];
-            if (sp == null || !sp.spawnOnLevelStart) continue;
+            EnemySpawnPoint sp = spawns[i];
+
+            if (sp == null || !sp.spawnOnLevelStart)
+                continue;
 
             if (sp.delay > 0f)
                 yield return new WaitForSeconds(sp.delay);
 
-            pool.Spawn(
-                sp.type,
-                sp.transform.position,
-                sp.transform.rotation,
-                enemiesRoot,
-                player,
-                sp.patrolRootOverride
-            );
+            SpawnInternal(sp);
         }
     }
 
-    // Alarm/trigger gibi durumlarda tek spawn
     public void SpawnSingle(EnemySpawnPoint sp)
     {
-        if (sp == null || pool == null) return;
+        if (sp == null || pool == null)
+            return;
 
         if (player == null)
         {
-            var p = GameObject.FindGameObjectWithTag("Player");
-            if (p != null) player = p.transform;
+            GameObject p = GameObject.FindGameObjectWithTag("Player");
+            if (p != null)
+                player = p.transform;
         }
-        if (player == null) return;
 
-        pool.Spawn(sp.type, sp.transform.position, sp.transform.rotation, enemiesRoot, player, sp.patrolRootOverride);
+        if (player == null)
+            return;
+
+        SpawnInternal(sp);
+    }
+
+    private void SpawnInternal(EnemySpawnPoint sp)
+    {
+        EnemyBase enemy = pool.Spawn(
+            sp.type,
+            sp.transform.position,
+            sp.transform.rotation,
+            enemiesRoot,
+            player,
+            sp.patrolRootOverride
+        );
+
+        if (enemy != null)
+            enemy.RegisterToStage();
     }
 }

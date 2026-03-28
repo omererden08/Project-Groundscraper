@@ -17,6 +17,7 @@ public abstract class RangedWeapon : MonoBehaviour, IWeapon
     protected bool isEquipped;
     protected float lastFireTime;
 
+    public virtual bool IsAutomatic => false;
     public int CurrentAmmo => currentAmmo;
     public int MaxAmmo => data != null ? data.maxAmmo : 0;
     public string WeaponID => data != null ? data.weaponID : string.Empty;
@@ -42,8 +43,6 @@ public abstract class RangedWeapon : MonoBehaviour, IWeapon
         spriteRenderer = GetComponent<SpriteRenderer>();
         rb = GetComponent<Rigidbody2D>();
         weaponCollider = GetComponent<Collider2D>();
-
-        Debug.Log($"{name}: Awake | weaponID={WeaponID} | bulletPrefab={(data.bulletPrefab != null ? data.bulletPrefab.name : "NULL")}");
     }
 
     private void HandleShoot(Vector2 position, Vector2 direction)
@@ -51,7 +50,6 @@ public abstract class RangedWeapon : MonoBehaviour, IWeapon
         if (!isEquipped)
             return;
 
-        Debug.Log($"{name}: HandleShoot");
         Use(direction);
     }
 
@@ -69,17 +67,13 @@ public abstract class RangedWeapon : MonoBehaviour, IWeapon
     public void Use(Vector2 direction)
     {
         if (!isEquipped)
-        {
-            Debug.LogWarning($"{name}: Use() cancelled, weapon not equipped.");
             return;
-        }
 
         if (data != null && Time.time < lastFireTime + data.fireRate)
             return;
 
         if (currentAmmo <= 0)
         {
-            Debug.Log($"{name}: No Ammo! Throwing weapon.");
             ThrowAsProjectile(direction);
             return;
         }
@@ -89,8 +83,6 @@ public abstract class RangedWeapon : MonoBehaviour, IWeapon
             Debug.LogWarning($"{name}: FirePoint missing.");
             return;
         }
-
-        Debug.Log($"{name}: Fire() çağrılıyor | ammo={currentAmmo} | bulletPrefab={(data != null && data.bulletPrefab != null ? data.bulletPrefab.name : "NULL")}");
 
         Fire(direction.normalized);
         ConsumeAmmo(1);
@@ -108,7 +100,6 @@ public abstract class RangedWeapon : MonoBehaviour, IWeapon
 
     protected virtual void OnAmmoChanged()
     {
-        Debug.Log($"{name} Fired | Ammo left: {currentAmmo}");
     }
 
     protected virtual void ThrowAsProjectile(Vector2 direction)
@@ -162,8 +153,6 @@ public abstract class RangedWeapon : MonoBehaviour, IWeapon
 
         PlayerEvents.OnShoot -= HandleShoot;
         PlayerEvents.OnShoot += HandleShoot;
-
-        Debug.Log($"{name}: Equipped | weaponID={WeaponID} | bulletPrefab={(data != null && data.bulletPrefab != null ? data.bulletPrefab.name : "NULL")}");
     }
 
     public virtual void OnDrop(Vector2 direction)
@@ -214,10 +203,9 @@ public abstract class RangedWeapon : MonoBehaviour, IWeapon
         bullet.transform.position = firePoint.position;
         bullet.transform.rotation = Quaternion.LookRotation(Vector3.forward, direction);
 
-        bullet.SetOwner(transform.root.gameObject);   // <-- eksik olan buydu
+        bullet.SetOwner(transform.root.gameObject);
         bullet.Fire(direction);
 
-        Debug.Log($"{name}: Bullet spawned -> {bullet.name}");
         return bullet;
     }
 }

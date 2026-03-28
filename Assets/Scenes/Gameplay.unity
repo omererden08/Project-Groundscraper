@@ -163,8 +163,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ce57b1664263cad41a5984d37fd4812d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BulletPool
-  bulletPrefab: {fileID: 8610394105567535150, guid: 4551128542dfb2d4e9c393be4686ec28, type: 3}
-  poolSize: 20
 --- !u!1 &160373408
 GameObject:
   m_ObjectHideFlags: 0
@@ -212,7 +210,7 @@ MonoBehaviour:
   entries:
   - type: 0
     prefab: {fileID: 101323422641288666, guid: f5f5170d89a539546855e3b12d977d72, type: 3}
-    prewarm: 10
+    initialSize: 5
 --- !u!1 &210526977
 GameObject:
   m_ObjectHideFlags: 0
@@ -520,11 +518,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GridManager
   gridWorldSize: {x: 40, y: 30}
-  nodeRadius: 0.5
+  nodeRadius: 0.15
   unwalkableMask:
     serializedVersion: 2
-    m_Bits: 0
-  obstacleBuffer: 0.15
+    m_Bits: 512
+  obstacleBuffer: 0.2
 --- !u!1 &627978505
 GameObject:
   m_ObjectHideFlags: 0
@@ -737,7 +735,7 @@ Camera:
   far clip plane: 1000
   field of view: 34
   orthographic: 1
-  orthographic size: 5
+  orthographic size: 7
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -881,6 +879,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1980863846}
   - component: {fileID: 1980863847}
+  - component: {fileID: 1980863848}
   m_Layer: 0
   m_Name: EnemySpawner
   m_TagString: Untagged
@@ -918,6 +917,22 @@ MonoBehaviour:
   pool: {fileID: 0}
   enemiesRoot: {fileID: 0}
   player: {fileID: 0}
+--- !u!114 &1980863848
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1980863845}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: db290a106169014419083ea5e941f167, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::StageClearManager
+  aliveEnemyCount: 0
+  onStageCleared:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &2002661816
 GameObject:
   m_ObjectHideFlags: 0

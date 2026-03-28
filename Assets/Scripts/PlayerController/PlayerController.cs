@@ -155,7 +155,7 @@ public class PlayerController : MonoBehaviour, IMeleeAttacker, IDamageable
     {
         if (legsAnimator == null || legsTransform == null) return;
 
-        Vector2 v = rb.velocity;
+        Vector2 v = rb.linearVelocity;
         float thrSqr = moveAnimThreshold * moveAnimThreshold;
 
         bool isMoving = v.sqrMagnitude > thrSqr;
@@ -333,7 +333,7 @@ public class PlayerController : MonoBehaviour, IMeleeAttacker, IDamageable
     public void ResetForRestart()
     {
         // hareket / fizik temizle
-        rb.velocity = Vector2.zero;
+        rb.linearVelocity = Vector2.zero;
         rb.angularVelocity = 0f;
 
         // aim flag reset (opsiyonel ama iyi)

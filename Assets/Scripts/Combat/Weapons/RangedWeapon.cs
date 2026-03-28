@@ -22,6 +22,7 @@ public abstract class RangedWeapon : MonoBehaviour, IWeapon
     public int MaxAmmo => data != null ? data.maxAmmo : 0;
     public string WeaponID => data != null ? data.weaponID : string.Empty;
     public bool IsRanged => true;
+    public Sprite BodySprite => data != null ? data.bodySprite : null;
 
     protected virtual void Awake()
     {

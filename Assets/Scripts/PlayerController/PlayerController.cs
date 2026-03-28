@@ -27,35 +27,27 @@ public class PlayerController : MonoBehaviour, IMeleeAttacker, IDamageable
     [Header("Body Sprite")]
     [SerializeField] private string bodyObjectName = "PlayerBody";
     [SerializeField] private Sprite unarmedBodySprite;
-    [SerializeField] private Sprite armedBodySprite;
+    [SerializeField] private Sprite defaultArmedBodySprite;
 
     [Header("Debug")]
     [SerializeField] private string currentStateName;
 
     private Rigidbody2D rb;
 
-    // Legs
     private Transform legsTransform;
     private Animator legsAnimator;
     private int isMovedHash;
 
-    // Body
     private SpriteRenderer bodyRenderer;
 
-    // Aim
     private Camera cachedCam;
-    private Vector2 aimDirection;               // weaponHoldPoint -> mouse
+    private Vector2 aimDirection;
     private bool hasAim;
-    private Vector2 dirToMouseFromPlayer;       // player -> mouse
+    private Vector2 dirToMouseFromPlayer;
 
     private IWeapon currentWeapon;
-
-    // UI cache
     private AmmoUI ammoUI;
 
-    // =========================
-    // Public API
-    // =========================
     public Transform Transform => transform;
     public Vector2 AimDirection => aimDirection;
     public float MeleeRange => meleeRange;
@@ -69,9 +61,6 @@ public class PlayerController : MonoBehaviour, IMeleeAttacker, IDamageable
     public float ShootDuration => shootDuration;
     public float MeleeDuration => meleeDuration;
 
-    // =========================
-    // FSM
-    // =========================
     public PlayerStateMachine StateMachine { get; private set; }
 
     public PlayerIdleState IdleState { get; private set; }
@@ -80,9 +69,6 @@ public class PlayerController : MonoBehaviour, IMeleeAttacker, IDamageable
     public PlayerMeleeState MeleeState { get; private set; }
     public PlayerDeadState DeadState { get; private set; }
 
-    // =========================
-    // Unity
-    // =========================
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -97,11 +83,8 @@ public class PlayerController : MonoBehaviour, IMeleeAttacker, IDamageable
         CacheLegsRefs();
         CacheBodyRenderer();
 
-        // Camera cache (main camera unload/load olabilir, Update’te de kontrol ediyoruz)
         cachedCam = Camera.main;
-
-        // AmmoUI cache (GamePlay HUD içinde olmalı)
-        ammoUI = FindFirstObjectByType<AmmoUI>(); // Unity 2022+ ; eskiyse FindObjectOfType<AmmoUI>()
+        ammoUI = FindFirstObjectByType<AmmoUI>();
 
         StateMachine = new PlayerStateMachine();
         IdleState = new PlayerIdleState(this, StateMachine);
@@ -119,7 +102,6 @@ public class PlayerController : MonoBehaviour, IMeleeAttacker, IDamageable
 
     private void Update()
     {
-        // Additive geçişlerde kamera değişebilir -> null ise yeniden al
         if (cachedCam == null)
             cachedCam = Camera.main;
 
@@ -138,9 +120,6 @@ public class PlayerController : MonoBehaviour, IMeleeAttacker, IDamageable
         StateMachine.CurrentState.PhysicsUpdate();
     }
 
-    // =========================
-    // Legs
-    // =========================
     private void CacheLegsRefs()
     {
         var legs = FindChildByName(transform, legsObjectName);
@@ -163,7 +142,6 @@ public class PlayerController : MonoBehaviour, IMeleeAttacker, IDamageable
 
         if (!isMoving) return;
 
-        // Daha iyi his için input yönünü tercih et
         Vector2 input = InputManager.Instance != null ? InputManager.Instance.MoveInput : Vector2.zero;
         if (input.sqrMagnitude < 0.0001f) input = v;
 
@@ -171,9 +149,6 @@ public class PlayerController : MonoBehaviour, IMeleeAttacker, IDamageable
         legsTransform.rotation = Quaternion.Euler(0f, 0f, angle);
     }
 
-    // =========================
-    // Body Sprite
-    // =========================
     private void CacheBodyRenderer()
     {
         var body = FindChildByName(transform, bodyObjectName);
@@ -183,16 +158,33 @@ public class PlayerController : MonoBehaviour, IMeleeAttacker, IDamageable
 
     private void ApplyBodySprite()
     {
-        if (bodyRenderer == null) return;
+        if (bodyRenderer == null)
+            return;
 
-        if (HasWeapon)
+        if (currentWeapon == null)
         {
-            if (armedBodySprite != null) bodyRenderer.sprite = armedBodySprite;
+            if (unarmedBodySprite != null)
+                bodyRenderer.sprite = unarmedBodySprite;
+
+            return;
         }
-        else
+
+        if (currentWeapon is RangedWeapon rangedWeapon)
         {
-            if (unarmedBodySprite != null) bodyRenderer.sprite = unarmedBodySprite;
+            if (rangedWeapon.BodySprite != null)
+                bodyRenderer.sprite = rangedWeapon.BodySprite;
+            else if (defaultArmedBodySprite != null)
+                bodyRenderer.sprite = defaultArmedBodySprite;
+            else if (unarmedBodySprite != null)
+                bodyRenderer.sprite = unarmedBodySprite;
+
+            return;
         }
+
+        if (defaultArmedBodySprite != null)
+            bodyRenderer.sprite = defaultArmedBodySprite;
+        else if (unarmedBodySprite != null)
+            bodyRenderer.sprite = unarmedBodySprite;
     }
 
     private static Transform FindChildByName(Transform root, string childName)
@@ -210,9 +202,6 @@ public class PlayerController : MonoBehaviour, IMeleeAttacker, IDamageable
         return null;
     }
 
-    // =========================
-    // Aim
-    // =========================
     private void CacheAimDirection()
     {
         if (cachedCam == null || weaponHoldPoint == null || InputManager.Instance == null)
@@ -253,9 +242,6 @@ public class PlayerController : MonoBehaviour, IMeleeAttacker, IDamageable
         rb.rotation = mouseAngle - weaponLocalAngle;
     }
 
-    // =========================
-    // Weapon
-    // =========================
     private void HandleWeaponInteraction()
     {
         if (InputManager.Instance == null) return;
@@ -269,7 +255,6 @@ public class PlayerController : MonoBehaviour, IMeleeAttacker, IDamageable
 
     private void TryPickupWeapon()
     {
-        // Not: OverlapCircleAll alloc yapar. İstersen NonAlloc sürümünü de yazarım.
         Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, pickupRadius);
 
         for (int i = 0; i < hits.Length; i++)
@@ -321,9 +306,6 @@ public class PlayerController : MonoBehaviour, IMeleeAttacker, IDamageable
         ApplyBodySprite();
     }
 
-    // =========================
-    // Damage
-    // =========================
     public void Die()
     {
         StateMachine.ChangeState(DeadState);
@@ -332,24 +314,16 @@ public class PlayerController : MonoBehaviour, IMeleeAttacker, IDamageable
 
     public void ResetForRestart()
     {
-        // hareket / fizik temizle
         rb.linearVelocity = Vector2.zero;
         rb.angularVelocity = 0f;
 
-        // aim flag reset (opsiyonel ama iyi)
         hasAim = false;
         currentWeapon = null;
 
-        // FSM'i yeniden başlat (kritik)
         StateMachine.Initialize(IdleState);
-
-        // body sprite tekrar uygula (opsiyonel)
         ApplyBodySprite();
     }
 
-    // =========================
-    // Debug
-    // =========================
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.yellow;

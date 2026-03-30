@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 1eba5f635bcc8e048989c754e159fcc0
+guid: cbf60810821cf984197b8686e8820c28
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 2814506322943799169
-    second: body_top_0
+      213: 2340093608518078233
+    second: maincr_top_unarmed_walk_1_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -100,23 +100,23 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: body_top_0
+      name: maincr_top_unarmed_walk_1_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 137
-        height: 166
-      alignment: 9
-      pivot: {x: 0.5, y: 0.2}
+        width: 135
+        height: 130
+      alignment: 0
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 18fe72db6922f0720800000000000000
-      internalID: 2814506322943799169
+      spriteID: 91fc1e41dbea97020800000000000000
+      internalID: 2340093608518078233
       vertices: []
       indices: 
       edges: []
@@ -125,7 +125,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 217abd4eb30877f47b2b1306098eb3a8
+    spriteID: 
     internalID: 0
     vertices: []
     indices: 
@@ -135,7 +135,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      body_top_0: 2814506322943799169
+      maincr_top_unarmed_walk_1_0: 2340093608518078233
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

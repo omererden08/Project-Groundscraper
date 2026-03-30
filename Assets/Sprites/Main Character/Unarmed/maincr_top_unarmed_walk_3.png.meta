@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 463d82ce958f37f4a8b17fbb3335547f
+guid: 49fa4c88630252246a2cccc0473c5c0a
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 3626848517478741640
-    second: maincr_top_unarmed_walk_4_0
+      213: 7215671305156291091
+    second: maincr_top_unarmed_walk_3_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -100,13 +100,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: maincr_top_unarmed_walk_4_0
+      name: maincr_top_unarmed_walk_3_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 137
-        height: 121
+        width: 135
+        height: 96
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -115,8 +115,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 886f872c287255230800000000000000
-      internalID: 3626848517478741640
+      spriteID: 31ae1df52d6332460800000000000000
+      internalID: 7215671305156291091
       vertices: []
       indices: 
       edges: []
@@ -135,7 +135,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      maincr_top_unarmed_walk_4_0: 3626848517478741640
+      maincr_top_unarmed_walk_3_0: 7215671305156291091
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

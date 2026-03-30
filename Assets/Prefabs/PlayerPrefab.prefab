@@ -79,12 +79,12 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 1
-  m_Sprite: {fileID: 2814506322943799169, guid: 1eba5f635bcc8e048989c754e159fcc0, type: 3}
+  m_Sprite: {fileID: 5845846641934728738, guid: a7584efc6522d9c4b95daa50b3a65455, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 1.37, y: 1.66}
+  m_Size: {x: 1.35, y: 1.68}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
@@ -323,7 +323,7 @@ MonoBehaviour:
   legsRotationOffset: 90
   bodyObjectName: PlayerBody
   unarmedBodySprite: {fileID: 7215671305156291091, guid: 49fa4c88630252246a2cccc0473c5c0a, type: 3}
-  armedBodySprite: {fileID: 2814506322943799169, guid: 1eba5f635bcc8e048989c754e159fcc0, type: 3}
+  defaultArmedBodySprite: {fileID: 0}
   currentStateName: 
 --- !u!60 &6907106954189496714
 PolygonCollider2D:

@@ -1,19 +1,13 @@
 fileFormatVersion: 2
-guid: dec11d067e0348d4fa2b4a2fdb23253a
+guid: c3df4afb1e99c7d4a9c2fc1a037e9768
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -6142374563283994760
-    second: crosshair_0
+      213: -700845649934944164
+    second: maincr_top_melee_hit_2_0
   - first:
-      213: -2565141449147483526
-    second: crosshair_1
-  - first:
-      213: -5829914293868266466
-    second: crosshair_2
-  - first:
-      213: -2476541911245631371
-    second: crosshair_3
+      213: -7482772838541508668
+    second: maincr_top_melee_hit_2_1
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -109,13 +103,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: crosshair_0
+      name: maincr_top_melee_hit_2_0
       rect:
         serializedVersion: 2
-        x: 10
-        y: 42
-        width: 20
-        height: 21
+        x: 102
+        y: 0
+        width: 140
+        height: 183
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -124,20 +118,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 877ff0ed0e6e1caa0800000000000000
-      internalID: -6142374563283994760
+      spriteID: c58ff3938981646f0800000000000000
+      internalID: -700845649934944164
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: crosshair_1
+      name: maincr_top_melee_hit_2_1
       rect:
         serializedVersion: 2
-        x: 44
-        y: 42
-        width: 20
-        height: 21
+        x: 132
+        y: 170
+        width: 90
+        height: 24
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -146,52 +140,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: a7afee45179c66cd0800000000000000
-      internalID: -2565141449147483526
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: crosshair_2
-      rect:
-        serializedVersion: 2
-        x: 10
-        y: 9
-        width: 20
-        height: 21
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: e1c720386dbf71fa0800000000000000
-      internalID: -5829914293868266466
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: crosshair_3
-      rect:
-        serializedVersion: 2
-        x: 44
-        y: 9
-        width: 20
-        height: 21
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 57056d4c04e81add0800000000000000
-      internalID: -2476541911245631371
+      spriteID: 4cfbacfafb9d72890800000000000000
+      internalID: -7482772838541508668
       vertices: []
       indices: 
       edges: []
@@ -210,10 +160,8 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      crosshair_0: -6142374563283994760
-      crosshair_1: -2565141449147483526
-      crosshair_2: -5829914293868266466
-      crosshair_3: -2476541911245631371
+      maincr_top_melee_hit_2_0: -700845649934944164
+      maincr_top_melee_hit_2_1: -7482772838541508668
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

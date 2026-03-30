@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: b17080bc89b378e47a8c5d22f8b2aa81
+guid: 245d4e94e0ff0c5458de5994c1aece65
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -7712411145649792866
-    second: maincr_top_unarmed_walk_8_0
+      213: -3746230680700762348
+    second: maincr_top_melee_hit_1_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -100,13 +100,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: maincr_top_unarmed_walk_8_0
+      name: maincr_top_melee_hit_1_0
       rect:
         serializedVersion: 2
-        x: 0
+        x: 96
         y: 0
-        width: 137
-        height: 121
+        width: 239
+        height: 115
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -115,8 +115,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: e98d7c5dce208f490800000000000000
-      internalID: -7712411145649792866
+      spriteID: 41749265b07b20cc0800000000000000
+      internalID: -3746230680700762348
       vertices: []
       indices: 
       edges: []
@@ -135,7 +135,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      maincr_top_unarmed_walk_8_0: -7712411145649792866
+      maincr_top_melee_hit_1_0: -3746230680700762348
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

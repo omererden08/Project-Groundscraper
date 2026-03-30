@@ -1,19 +1,22 @@
 fileFormatVersion: 2
-guid: dec11d067e0348d4fa2b4a2fdb23253a
+guid: df328c65dbd8a98449856fb506ffa2f2
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -6142374563283994760
-    second: crosshair_0
+      213: 3869410770770151812
+    second: maincr_top_melee_hit_4_0
   - first:
-      213: -2565141449147483526
-    second: crosshair_1
+      213: 3218254536847212938
+    second: maincr_top_melee_hit_4_1
   - first:
-      213: -5829914293868266466
-    second: crosshair_2
+      213: 6488828793901920680
+    second: maincr_top_melee_hit_4_2
   - first:
-      213: -2476541911245631371
-    second: crosshair_3
+      213: 9157331721350486621
+    second: maincr_top_melee_hit_4_3
+  - first:
+      213: 7332450365877650825
+    second: maincr_top_melee_hit_4_4
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -109,13 +112,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: crosshair_0
+      name: maincr_top_melee_hit_4_0
       rect:
         serializedVersion: 2
-        x: 10
-        y: 42
-        width: 20
-        height: 21
+        x: 83
+        y: 170
+        width: 27
+        height: 12
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -124,20 +127,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 877ff0ed0e6e1caa0800000000000000
-      internalID: -6142374563283994760
+      spriteID: 48943d15898e2b530800000000000000
+      internalID: 3869410770770151812
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: crosshair_1
+      name: maincr_top_melee_hit_4_1
       rect:
         serializedVersion: 2
-        x: 44
-        y: 42
-        width: 20
-        height: 21
+        x: 63
+        y: 158
+        width: 12
+        height: 10
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -146,20 +149,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: a7afee45179c66cd0800000000000000
-      internalID: -2565141449147483526
+      spriteID: a814191437989ac20800000000000000
+      internalID: 3218254536847212938
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: crosshair_2
+      name: maincr_top_melee_hit_4_2
       rect:
         serializedVersion: 2
-        x: 10
-        y: 9
+        x: 79
+        y: 156
         width: 20
-        height: 21
+        height: 13
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -168,20 +171,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: e1c720386dbf71fa0800000000000000
-      internalID: -5829914293868266466
+      spriteID: 8a1b9d4a863fc0a50800000000000000
+      internalID: 6488828793901920680
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: crosshair_3
+      name: maincr_top_melee_hit_4_3
       rect:
         serializedVersion: 2
-        x: 44
-        y: 9
-        width: 20
-        height: 21
+        x: 0
+        y: 0
+        width: 240
+        height: 129
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -190,8 +193,30 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 57056d4c04e81add0800000000000000
-      internalID: -2476541911245631371
+      spriteID: d5a1385dea0651f70800000000000000
+      internalID: 9157331721350486621
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: maincr_top_melee_hit_4_4
+      rect:
+        serializedVersion: 2
+        x: 9
+        y: 112
+        width: 57
+        height: 43
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 985025f32c812c560800000000000000
+      internalID: 7332450365877650825
       vertices: []
       indices: 
       edges: []
@@ -210,10 +235,11 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      crosshair_0: -6142374563283994760
-      crosshair_1: -2565141449147483526
-      crosshair_2: -5829914293868266466
-      crosshair_3: -2476541911245631371
+      maincr_top_melee_hit_4_0: 3869410770770151812
+      maincr_top_melee_hit_4_1: 3218254536847212938
+      maincr_top_melee_hit_4_2: 6488828793901920680
+      maincr_top_melee_hit_4_3: 9157331721350486621
+      maincr_top_melee_hit_4_4: 7332450365877650825
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

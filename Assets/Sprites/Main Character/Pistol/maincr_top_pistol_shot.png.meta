@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: fc4a952b991c9f149b05bbbf0dfce643
+guid: a33ba8e830f9a864ca806bbcb57cc9b2
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -7145879314941289380
-    second: maincr_top_unarmed_walk_7_0
+      213: -1170382887386497222
+    second: maincr_top_pistol_shot_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -100,23 +100,23 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: maincr_top_unarmed_walk_7_0
+      name: maincr_top_pistol_shot_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 137
-        height: 110
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        width: 135
+        height: 189
+      alignment: 9
+      pivot: {x: 0.5, y: 0.18518518}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: c5cdc11af9cb4dc90800000000000000
-      internalID: -7145879314941289380
+      spriteID: a3fb12207f6f1cfe0800000000000000
+      internalID: -1170382887386497222
       vertices: []
       indices: 
       edges: []
@@ -125,7 +125,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: 7b8c36a12c502e043b7e973ac9720e34
     internalID: 0
     vertices: []
     indices: 
@@ -135,7 +135,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      maincr_top_unarmed_walk_7_0: -7145879314941289380
+      maincr_top_pistol_shot_0: -1170382887386497222
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

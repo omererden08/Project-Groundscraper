@@ -1,10 +1,13 @@
 fileFormatVersion: 2
-guid: 56b751183590cec48b4105ed4ee6022f
+guid: e3d480c2fc9d80243a676e1794307bc7
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -1505720474749486256
-    second: maincr_top_unarmed_walk_6_0
+      213: -2346302928887187388
+    second: bullet_0
+  - first:
+      213: 5379323082974078785
+    second: bullet_1
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -100,13 +103,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: maincr_top_unarmed_walk_6_0
+      name: bullet_0
       rect:
         serializedVersion: 2
         x: 0
-        y: 0
-        width: 137
-        height: 121
+        y: 15
+        width: 12
+        height: 71
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -115,8 +118,30 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 05b3683b43b9a1be0800000000000000
-      internalID: -1505720474749486256
+      spriteID: 448783cdae1407fd0800000000000000
+      internalID: -2346302928887187388
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bullet_1
+      rect:
+        serializedVersion: 2
+        x: 5
+        y: 0
+        width: 6
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 147aab4d7d137aa40800000000000000
+      internalID: 5379323082974078785
       vertices: []
       indices: 
       edges: []
@@ -135,7 +160,8 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      maincr_top_unarmed_walk_6_0: -1505720474749486256
+      bullet_0: -2346302928887187388
+      bullet_1: 5379323082974078785
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

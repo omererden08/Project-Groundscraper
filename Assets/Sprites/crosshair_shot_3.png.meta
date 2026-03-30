@@ -1,19 +1,19 @@
 fileFormatVersion: 2
-guid: dec11d067e0348d4fa2b4a2fdb23253a
+guid: 6a444db7716f2e4498426f3b1d478f7f
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -6142374563283994760
-    second: crosshair_0
+      213: 3303207464881390990
+    second: crosshair_shot_3_0
   - first:
-      213: -2565141449147483526
-    second: crosshair_1
+      213: -4632503400858779228
+    second: crosshair_shot_3_1
   - first:
-      213: -5829914293868266466
-    second: crosshair_2
+      213: 2202400736526284403
+    second: crosshair_shot_3_2
   - first:
-      213: -2476541911245631371
-    second: crosshair_3
+      213: -2095474598260134646
+    second: crosshair_shot_3_3
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -109,11 +109,11 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: crosshair_0
+      name: crosshair_shot_3_0
       rect:
         serializedVersion: 2
-        x: 10
-        y: 42
+        x: 7
+        y: 45
         width: 20
         height: 21
       alignment: 0
@@ -124,18 +124,18 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 877ff0ed0e6e1caa0800000000000000
-      internalID: -6142374563283994760
+      spriteID: e858cab20b957dd20800000000000000
+      internalID: 3303207464881390990
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: crosshair_1
+      name: crosshair_shot_3_1
       rect:
         serializedVersion: 2
-        x: 44
-        y: 42
+        x: 47
+        y: 45
         width: 20
         height: 21
       alignment: 0
@@ -146,18 +146,18 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: a7afee45179c66cd0800000000000000
-      internalID: -2565141449147483526
+      spriteID: 4a1060373ba06bfb0800000000000000
+      internalID: -4632503400858779228
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: crosshair_2
+      name: crosshair_shot_3_2
       rect:
         serializedVersion: 2
-        x: 10
-        y: 9
+        x: 7
+        y: 7
         width: 20
         height: 21
       alignment: 0
@@ -168,18 +168,18 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: e1c720386dbf71fa0800000000000000
-      internalID: -5829914293868266466
+      spriteID: 37635b11dcf709e10800000000000000
+      internalID: 2202400736526284403
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: crosshair_3
+      name: crosshair_shot_3_3
       rect:
         serializedVersion: 2
-        x: 44
-        y: 9
+        x: 47
+        y: 7
         width: 20
         height: 21
       alignment: 0
@@ -190,8 +190,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 57056d4c04e81add0800000000000000
-      internalID: -2476541911245631371
+      spriteID: a0da9d684f06be2e0800000000000000
+      internalID: -2095474598260134646
       vertices: []
       indices: 
       edges: []
@@ -210,10 +210,10 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      crosshair_0: -6142374563283994760
-      crosshair_1: -2565141449147483526
-      crosshair_2: -5829914293868266466
-      crosshair_3: -2476541911245631371
+      crosshair_shot_3_0: 3303207464881390990
+      crosshair_shot_3_1: -4632503400858779228
+      crosshair_shot_3_2: 2202400736526284403
+      crosshair_shot_3_3: -2095474598260134646
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

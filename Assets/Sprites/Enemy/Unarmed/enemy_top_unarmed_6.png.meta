@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 5bce198fc2430614b869f0813af37cbe
+guid: b044bb3bbcff9954696ecc04af21e40b
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -2537703002995436228
-    second: enemy_top_unarmed_2_0
+      213: 825274571150387947
+    second: enemy_top_unarmed_6_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -46,11 +46,11 @@ TextureImporter:
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
-  spriteMode: 2
+  spriteMode: 1
   spriteExtrude: 1
   spriteMeshType: 1
-  alignment: 0
-  spritePivot: {x: 0.5, y: 0.5}
+  alignment: 9
+  spritePivot: {x: 0.5, y: 0.30769232}
   spritePixelsToUnits: 100
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
@@ -100,7 +100,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: enemy_top_unarmed_2_0
+      name: enemy_top_unarmed_6_0
       rect:
         serializedVersion: 2
         x: 0
@@ -115,8 +115,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: c35d309609448ccd0800000000000000
-      internalID: -2537703002995436228
+      spriteID: beae49799d6f37b00800000000000000
+      internalID: 825274571150387947
       vertices: []
       indices: 
       edges: []
@@ -125,8 +125,8 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 5deca552ac91c24458e67952501e2977
-    internalID: 0
+    spriteID: ef962571736395b408ce5af0fe37b3b3
+    internalID: 585539734
     vertices: []
     indices: 
     edges: []
@@ -135,7 +135,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      enemy_top_unarmed_2_0: -2537703002995436228
+      enemy_top_unarmed_6_0: 825274571150387947
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

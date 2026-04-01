@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 7b6143b62f659554c9a1af61afd48ed7
+guid: c4b198dbd78c4854d95bd5351b16f741
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 2870952951855988283
-    second: enemy_top_unarmed_5_0
+      213: -714507857220653542
+    second: enemy_top_pistol_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -46,11 +46,11 @@ TextureImporter:
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
-  spriteMode: 2
+  spriteMode: 1
   spriteExtrude: 1
   spriteMeshType: 1
-  alignment: 0
-  spritePivot: {x: 0.5, y: 0.5}
+  alignment: 9
+  spritePivot: {x: 0.5, y: 0.23529412}
   spritePixelsToUnits: 100
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
@@ -100,23 +100,23 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: enemy_top_unarmed_5_0
+      name: enemy_top_pistol_0
       rect:
         serializedVersion: 2
         x: 0
-        y: 0
+        y: 2
         width: 137
-        height: 130
+        height: 151
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: b3e3c3eaf7ca7d720800000000000000
-      internalID: 2870952951855988283
+      spriteID: a1e2325b3ee8516f0800000000000000
+      internalID: -714507857220653542
       vertices: []
       indices: 
       edges: []
@@ -125,8 +125,8 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
-    internalID: 0
+    spriteID: 5e97eb03825dee720800000000000000
+    internalID: 1537655665
     vertices: []
     indices: 
     edges: []
@@ -135,7 +135,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      enemy_top_unarmed_5_0: 2870952951855988283
+      enemy_top_pistol_0: -714507857220653542
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

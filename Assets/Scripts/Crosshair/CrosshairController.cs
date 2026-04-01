@@ -7,6 +7,10 @@ public class CrosshairController : MonoBehaviour
 {
     [SerializeField] private RectTransform crosshairImage;
 
+    [Header("Animation")]
+    [SerializeField] private Animator animator;
+    [SerializeField] private string shootTriggerName = "Shoot";
+
     [Header("Mouse Smooth")]
     [SerializeField] private float smoothTime = 0.05f;
     [SerializeField] private float maxSpeed = 10000f;
@@ -23,21 +27,25 @@ public class CrosshairController : MonoBehaviour
     private void OnEnable()
     {
         SceneManager.activeSceneChanged += HandleActiveSceneChanged;
+        PlayerEvents.OnCrosshairShoot += PlayShootFeedback;
     }
 
     private void OnDisable()
     {
         SceneManager.activeSceneChanged -= HandleActiveSceneChanged;
+        PlayerEvents.OnCrosshairShoot -= PlayShootFeedback;
     }
 
     private void Awake()
     {
         ResolveCamera();
+
+        if (animator == null)
+            animator = GetComponent<Animator>();
     }
 
     private void Start()
     {
-        // Mouse.current null olabilir (gamepad vs). Güvenli al:
         if (Mouse.current != null)
             currentScreenPos = Mouse.current.position.ReadValue();
         else
@@ -46,7 +54,6 @@ public class CrosshairController : MonoBehaviour
 
     private void HandleActiveSceneChanged(Scene oldScene, Scene newScene)
     {
-        // Aktif sahne değişince (MainMenu -> Gameplay) kamera yenilenir
         ResolveCamera();
     }
 
@@ -54,18 +61,16 @@ public class CrosshairController : MonoBehaviour
     {
         cam = Camera.main;
 
-        // Eğer main camera henüz oluşmadıysa, bir süre sonra tekrar deneyeceğiz (Update’te)
         if (cam == null)
             Debug.LogWarning("CrosshairController: Camera.main bulunamadı (henüz yüklenmemiş olabilir).");
     }
 
     private void Update()
     {
-        // Kamera destroy edilmişse / yoksa tekrar bul
         if (cam == null)
         {
             ResolveCamera();
-            if (cam == null) return; // kamera gelene kadar aim hesaplama yapma
+            if (cam == null) return;
         }
 
         Vector2 mouseScreen = InputManager.Instance.LookInput;
@@ -79,19 +84,25 @@ public class CrosshairController : MonoBehaviour
             Time.deltaTime
         );
 
-        // Screen clamp
         currentScreenPos.x = Mathf.Clamp(currentScreenPos.x, screenPadding, Screen.width - screenPadding);
         currentScreenPos.y = Mathf.Clamp(currentScreenPos.y, screenPadding, Screen.height - screenPadding);
 
-        // UI crosshair
         if (crosshairImage != null)
             crosshairImage.position = currentScreenPos;
 
-        // World aim
         float z = Mathf.Abs(cam.transform.position.z);
         Vector3 aimWorld = cam.ScreenToWorldPoint(new Vector3(currentScreenPos.x, currentScreenPos.y, z));
         aimWorld.z = 0f;
 
         OnAimWorldChanged?.Invoke(aimWorld);
+    }
+
+    public void PlayShootFeedback()
+    {
+        if (animator == null)
+            return;
+
+        animator.SetTrigger(shootTriggerName);
+        
     }
 }

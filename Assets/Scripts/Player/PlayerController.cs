@@ -18,35 +18,20 @@ public class PlayerController : MonoBehaviour, IMeleeAttacker, IDamageable
     [SerializeField] private Transform weaponHoldPoint;
     [SerializeField] private float pickupRadius = 1.5f;
 
-    [Header("Animation")]
-    [SerializeField] private string legsObjectName = "PlayerLegs";
-    [SerializeField] private string isMovedParam = "isMoved";
-    [SerializeField] private float moveAnimThreshold = 0.01f;
-    [SerializeField] private float legsRotationOffset = 0f;
-
-    [Header("Body Sprite")]
-    [SerializeField] private string bodyObjectName = "PlayerBody";
-    [SerializeField] private Sprite unarmedBodySprite;
-    [SerializeField] private Sprite defaultArmedBodySprite;
-
     [Header("Debug")]
     [SerializeField] private string currentStateName;
 
     private Rigidbody2D rb;
 
-    private Transform legsTransform;
-    private Animator legsAnimator;
-    private int isMovedHash;
-
-    private SpriteRenderer bodyRenderer;
-
     private Camera cachedCam;
     private Vector2 aimDirection;
     private bool hasAim;
+    private bool wasMovingLastFrame;
     private Vector2 dirToMouseFromPlayer;
 
     private IWeapon currentWeapon;
     private AmmoUI ammoUI;
+
 
     public Transform Transform => transform;
     public Vector2 AimDirection => aimDirection;
@@ -78,11 +63,6 @@ public class PlayerController : MonoBehaviour, IMeleeAttacker, IDamageable
         if (weaponHoldPoint == null)
             weaponHoldPoint = transform.Find("WeaponHoldPoint");
 
-        isMovedHash = Animator.StringToHash(isMovedParam);
-
-        CacheLegsRefs();
-        CacheBodyRenderer();
-
         cachedCam = Camera.main;
         ammoUI = FindFirstObjectByType<AmmoUI>();
 
@@ -97,7 +77,8 @@ public class PlayerController : MonoBehaviour, IMeleeAttacker, IDamageable
     private void Start()
     {
         StateMachine.Initialize(IdleState);
-        ApplyBodySprite();
+        PlayerEvents.RaisePlayerMoveStateChanged(false);
+        PlayerEvents.RaiseWeaponUnequipped();
     }
 
     private void Update()
@@ -107,10 +88,11 @@ public class PlayerController : MonoBehaviour, IMeleeAttacker, IDamageable
 
         CacheAimDirection();
         HandleWeaponInteraction();
-        UpdateLegsMoveAnimAndRotation();
 
         StateMachine.CurrentState.HandleInput();
         StateMachine.CurrentState.Update();
+
+        UpdateMovementEvent();
 
         currentStateName = StateMachine.CurrentState?.Name;
     }
@@ -120,86 +102,15 @@ public class PlayerController : MonoBehaviour, IMeleeAttacker, IDamageable
         StateMachine.CurrentState.PhysicsUpdate();
     }
 
-    private void CacheLegsRefs()
+    private void UpdateMovementEvent()
     {
-        var legs = FindChildByName(transform, legsObjectName);
-        if (legs != null)
-        {
-            legsTransform = legs;
-            legsAnimator = legs.GetComponent<Animator>();
-        }
-    }
+        bool isMoving = rb.linearVelocity.sqrMagnitude > 0.0001f;
 
-    private void UpdateLegsMoveAnimAndRotation()
-    {
-        if (legsAnimator == null || legsTransform == null) return;
-
-        Vector2 v = rb.linearVelocity;
-        float thrSqr = moveAnimThreshold * moveAnimThreshold;
-
-        bool isMoving = v.sqrMagnitude > thrSqr;
-        legsAnimator.SetBool(isMovedHash, isMoving);
-
-        if (!isMoving) return;
-
-        Vector2 input = InputManager.Instance != null ? InputManager.Instance.MoveInput : Vector2.zero;
-        if (input.sqrMagnitude < 0.0001f) input = v;
-
-        float angle = Mathf.Atan2(input.y, input.x) * Mathf.Rad2Deg + legsRotationOffset;
-        legsTransform.rotation = Quaternion.Euler(0f, 0f, angle);
-    }
-
-    private void CacheBodyRenderer()
-    {
-        var body = FindChildByName(transform, bodyObjectName);
-        if (body != null)
-            bodyRenderer = body.GetComponent<SpriteRenderer>();
-    }
-
-    private void ApplyBodySprite()
-    {
-        if (bodyRenderer == null)
+        if (wasMovingLastFrame == isMoving)
             return;
 
-        if (currentWeapon == null)
-        {
-            if (unarmedBodySprite != null)
-                bodyRenderer.sprite = unarmedBodySprite;
-
-            return;
-        }
-
-        if (currentWeapon is RangedWeapon rangedWeapon)
-        {
-            if (rangedWeapon.BodySprite != null)
-                bodyRenderer.sprite = rangedWeapon.BodySprite;
-            else if (defaultArmedBodySprite != null)
-                bodyRenderer.sprite = defaultArmedBodySprite;
-            else if (unarmedBodySprite != null)
-                bodyRenderer.sprite = unarmedBodySprite;
-
-            return;
-        }
-
-        if (defaultArmedBodySprite != null)
-            bodyRenderer.sprite = defaultArmedBodySprite;
-        else if (unarmedBodySprite != null)
-            bodyRenderer.sprite = unarmedBodySprite;
-    }
-
-    private static Transform FindChildByName(Transform root, string childName)
-    {
-        if (root == null) return null;
-
-        Transform t = root.Find(childName);
-        if (t != null) return t;
-
-        var all = root.GetComponentsInChildren<Transform>(true);
-        for (int i = 0; i < all.Length; i++)
-            if (all[i].name == childName)
-                return all[i];
-
-        return null;
+        wasMovingLastFrame = isMoving;
+        PlayerEvents.RaisePlayerMoveStateChanged(isMoving);
     }
 
     private void CacheAimDirection()
@@ -278,14 +189,22 @@ public class PlayerController : MonoBehaviour, IMeleeAttacker, IDamageable
         currentWeapon = weapon;
         weapon.OnEquip(weaponHoldPoint);
 
-        ApplyBodySprite();
-
-        PlayerEvents.RaiseWeaponPickedUp(weapon.WeaponID);
-
         if (weapon is RangedWeapon ranged)
         {
-            if (ammoUI == null) ammoUI = FindFirstObjectByType<AmmoUI>();
+            PlayerEvents.RaiseWeaponEquipped(ranged.Data);
+
+            if (ammoUI == null)
+                ammoUI = FindFirstObjectByType<AmmoUI>();
+
             ammoUI?.SetWeapon(ranged);
+        }
+        else if (weapon is MeleeWeapon melee)
+        {
+            PlayerEvents.RaiseWeaponEquipped(melee.Data);
+        }
+        else
+        {
+            PlayerEvents.RaiseWeaponUnequipped();
         }
     }
 
@@ -294,18 +213,18 @@ public class PlayerController : MonoBehaviour, IMeleeAttacker, IDamageable
         if (currentWeapon == null) return;
 
         currentWeapon.OnDrop(aimDirection);
-        PlayerEvents.RaiseWeaponDropped(currentWeapon.WeaponID);
 
         if (currentWeapon is RangedWeapon)
         {
-            if (ammoUI == null) ammoUI = FindFirstObjectByType<AmmoUI>();
+            if (ammoUI == null)
+                ammoUI = FindFirstObjectByType<AmmoUI>();
+
             ammoUI?.Clear();
         }
 
         currentWeapon = null;
-        ApplyBodySprite();
+        PlayerEvents.RaiseWeaponUnequipped();
     }
-
     public void Die()
     {
         StateMachine.ChangeState(DeadState);
@@ -319,9 +238,12 @@ public class PlayerController : MonoBehaviour, IMeleeAttacker, IDamageable
 
         hasAim = false;
         currentWeapon = null;
+        wasMovingLastFrame = false;
+
+        PlayerEvents.RaisePlayerMoveStateChanged(false);
+        PlayerEvents.RaiseWeaponUnequipped();
 
         StateMachine.Initialize(IdleState);
-        ApplyBodySprite();
     }
 
     private void OnDrawGizmosSelected()

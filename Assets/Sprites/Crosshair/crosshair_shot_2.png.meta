@@ -1,19 +1,19 @@
 fileFormatVersion: 2
-guid: dec11d067e0348d4fa2b4a2fdb23253a
+guid: a8588d4dc5ac8de4a93f7b51fea71f4b
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -6142374563283994760
-    second: crosshair_0
+      213: 6182765633706018272
+    second: crosshair_shot_2_0
   - first:
-      213: -2565141449147483526
-    second: crosshair_1
+      213: -3168349036563817902
+    second: crosshair_shot_2_1
   - first:
-      213: -5829914293868266466
-    second: crosshair_2
+      213: -5906516539243732004
+    second: crosshair_shot_2_2
   - first:
-      213: -2476541911245631371
-    second: crosshair_3
+      213: -3235517088895883645
+    second: crosshair_shot_2_3
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -55,7 +55,7 @@ TextureImporter:
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
-  spriteMode: 2
+  spriteMode: 1
   spriteExtrude: 1
   spriteMeshType: 1
   alignment: 0
@@ -109,11 +109,11 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: crosshair_0
+      name: crosshair_shot_2_0
       rect:
         serializedVersion: 2
-        x: 10
-        y: 42
+        x: 4
+        y: 48
         width: 20
         height: 21
       alignment: 0
@@ -124,18 +124,18 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 877ff0ed0e6e1caa0800000000000000
-      internalID: -6142374563283994760
+      spriteID: 0e54a8e06989dc550800000000000000
+      internalID: 6182765633706018272
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: crosshair_1
+      name: crosshair_shot_2_1
       rect:
         serializedVersion: 2
-        x: 44
-        y: 42
+        x: 50
+        y: 48
         width: 20
         height: 21
       alignment: 0
@@ -146,18 +146,18 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: a7afee45179c66cd0800000000000000
-      internalID: -2565141449147483526
+      spriteID: 25a992f7653c704d0800000000000000
+      internalID: -3168349036563817902
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: crosshair_2
+      name: crosshair_shot_2_2
       rect:
         serializedVersion: 2
-        x: 10
-        y: 9
+        x: 4
+        y: 4
         width: 20
         height: 21
       alignment: 0
@@ -168,18 +168,18 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: e1c720386dbf71fa0800000000000000
-      internalID: -5829914293868266466
+      spriteID: cd3686a6086d70ea0800000000000000
+      internalID: -5906516539243732004
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: crosshair_3
+      name: crosshair_shot_2_3
       rect:
         serializedVersion: 2
-        x: 44
-        y: 9
+        x: 50
+        y: 4
         width: 20
         height: 21
       alignment: 0
@@ -190,8 +190,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 57056d4c04e81add0800000000000000
-      internalID: -2476541911245631371
+      spriteID: 386a7a3a9522913d0800000000000000
+      internalID: -3235517088895883645
       vertices: []
       indices: 
       edges: []
@@ -200,7 +200,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: 5e97eb03825dee720800000000000000
     internalID: 0
     vertices: []
     indices: 
@@ -210,10 +210,10 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      crosshair_0: -6142374563283994760
-      crosshair_1: -2565141449147483526
-      crosshair_2: -5829914293868266466
-      crosshair_3: -2476541911245631371
+      crosshair_shot_2_0: 6182765633706018272
+      crosshair_shot_2_1: -3168349036563817902
+      crosshair_shot_2_2: -5906516539243732004
+      crosshair_shot_2_3: -3235517088895883645
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

@@ -4,21 +4,46 @@ using System.Collections;
 [RequireComponent(typeof(Rigidbody2D))]
 public class MeleeWeapon : MonoBehaviour, IWeapon
 {
-    [Header("Weapon Settings")]
-    [SerializeField] private string weaponID = "melee_default";
+    [Header("Data")]
+    [SerializeField] private WeaponData data;
 
     [Header("Drop Physics")]
-    [SerializeField] private float dropForce = 6f;
-    [SerializeField] private float dropLinearDrag = 7f;
-    [SerializeField] private float dropAngularDrag = 7f;
     [SerializeField] private float dragResetDelay = 1f;
 
-    public string WeaponID => weaponID;
+    private Rigidbody2D rb;
+    private SpriteRenderer spriteRenderer;
+    private Collider2D weaponCollider;
+
+    private bool isEquipped;
+
+    public string WeaponID => data != null ? data.weaponID : string.Empty;
     public bool IsRanged => false;
+    public WeaponData Data => data;
+
+    private void Awake()
+    {
+        rb = GetComponent<Rigidbody2D>();
+        spriteRenderer = GetComponent<SpriteRenderer>();
+        weaponCollider = GetComponent<Collider2D>();
+
+        if (data == null)
+        {
+            Debug.LogError($"{name}: WeaponData not assigned.");
+            enabled = false;
+        }
+    }
+
+    private void HandleMeleeAttack(Vector2 position, Vector2 direction)
+    {
+        if (!isEquipped)
+            return;
+
+        Use();
+    }
 
     public void Use()
     {
-        if (transform.parent == null)
+        if (!isEquipped || transform.parent == null)
         {
             Debug.LogWarning("Tried to use unequipped weapon.");
             return;
@@ -26,10 +51,7 @@ public class MeleeWeapon : MonoBehaviour, IWeapon
 
         IMeleeAttacker attacker = transform.parent.GetComponentInParent<IMeleeAttacker>();
         if (attacker != null)
-        {
             MeleeAttackHandler.DoAttack(attacker);
-            Debug.Log("🪓 Melee Attack executed");
-        }
     }
 
     public void OnEquip(Transform weaponHolder)
@@ -38,57 +60,67 @@ public class MeleeWeapon : MonoBehaviour, IWeapon
         transform.localPosition = Vector3.zero;
         transform.localRotation = Quaternion.identity;
 
-        Rigidbody2D rb = GetComponent<Rigidbody2D>();
-        if (rb)
+        if (rb != null)
         {
             rb.linearVelocity = Vector2.zero;
             rb.angularVelocity = 0f;
             rb.isKinematic = true;
         }
 
-        Collider2D col = GetComponent<Collider2D>();
-        if (col)
-            col.enabled = false;
-    }
+        if (weaponCollider != null)
+            weaponCollider.enabled = false;
 
+        if (spriteRenderer != null)
+            spriteRenderer.enabled = false;
+
+        isEquipped = true;
+
+        PlayerEvents.OnMeleeAttack -= HandleMeleeAttack;
+        PlayerEvents.OnMeleeAttack += HandleMeleeAttack;
+    }
 
     public void OnDrop(Vector2 dropDirection)
     {
+        isEquipped = false;
+        PlayerEvents.OnMeleeAttack -= HandleMeleeAttack;
+
         transform.SetParent(null);
 
-        Rigidbody2D rb = GetComponent<Rigidbody2D>();
-        if (rb)
+        if (rb != null)
         {
             rb.linearVelocity = Vector2.zero;
             rb.angularVelocity = 0f;
-
-            // Rigidbody önce resetlenmeli
             rb.isKinematic = false;
-            rb.rotation = 0f; // opsiyonel: dönme sıfırlanır
+            rb.rotation = 0f;
 
-            rb.AddForce(dropDirection.normalized * dropForce, ForceMode2D.Impulse);
-            rb.linearDamping = dropLinearDrag;
-            rb.angularDamping = dropAngularDrag;
+            if (data != null)
+            {
+                rb.AddForce(dropDirection.normalized * data.dropForce, ForceMode2D.Impulse);
+                rb.linearDamping = data.drag;
+                rb.angularDamping = data.drag;
+            }
 
-            StopAllCoroutines(); // Yeni coroutine başlamadan önce eskileri iptal et
+            StopAllCoroutines();
             StartCoroutine(ResetDrag(rb, dragResetDelay));
         }
 
-        Collider2D col = GetComponent<Collider2D>();
-        if (col)
-            col.enabled = true;
+        if (weaponCollider != null)
+            weaponCollider.enabled = true;
 
-        Debug.Log("📦 Weapon Dropped");
+        if (spriteRenderer != null)
+            spriteRenderer.enabled = true;
+
+        PlayerEvents.RaiseWeaponDropped(WeaponID);
     }
 
-
-    private IEnumerator ResetDrag(Rigidbody2D rb, float delay)
+    private IEnumerator ResetDrag(Rigidbody2D targetRb, float delay)
     {
         yield return new WaitForSeconds(delay);
-        if (rb != null)
+
+        if (targetRb != null)
         {
-            rb.linearDamping = 0f;
-            rb.angularDamping = 0f;
+            targetRb.linearDamping = 0f;
+            targetRb.angularDamping = 0f;
         }
     }
 }

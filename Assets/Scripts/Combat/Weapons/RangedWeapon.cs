@@ -16,13 +16,12 @@ public abstract class RangedWeapon : MonoBehaviour, IWeapon
 
     protected bool isEquipped;
     protected float lastFireTime;
-
+    public WeaponData Data => data;
     public virtual bool IsAutomatic => false;
     public int CurrentAmmo => currentAmmo;
     public int MaxAmmo => data != null ? data.maxAmmo : 0;
     public string WeaponID => data != null ? data.weaponID : string.Empty;
     public bool IsRanged => true;
-    public Sprite BodySprite => data != null ? data.bodySprite : null;
 
     protected virtual void Awake()
     {
@@ -63,6 +62,8 @@ public abstract class RangedWeapon : MonoBehaviour, IWeapon
         }
 
         Use(firePoint.right);
+
+
     }
 
     public void Use(Vector2 direction)
@@ -86,6 +87,7 @@ public abstract class RangedWeapon : MonoBehaviour, IWeapon
         }
 
         Fire(direction.normalized);
+        PlayerEvents.RaiseCrosshairShoot();
         ConsumeAmmo(1);
         OnAmmoChanged();
 

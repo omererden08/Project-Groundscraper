@@ -13,9 +13,11 @@ MonoBehaviour:
   m_Name: Pistol
   m_EditorClassIdentifier: Assembly-CSharp::WeaponData
   weaponID: pistol
+  bodyOverrideController: {fileID: 22100000, guid: 546a06419c754434baee265771ec9dcb, type: 2}
   bulletPrefab: {fileID: 2897616767888490673, guid: 4551128542dfb2d4e9c393be4686ec28, type: 3}
   maxAmmo: 8
   shootForce: 15
   fireRate: 0.25
   dropForce: 6
   drag: 7
+  fireAnimationType: 2

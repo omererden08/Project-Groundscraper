@@ -13,9 +13,11 @@ MonoBehaviour:
   m_Name: AssaultRifle
   m_EditorClassIdentifier: Assembly-CSharp::WeaponData
   weaponID: assault_rifle
+  bodySprite: {fileID: 0}
   bulletPrefab: {fileID: 2897616767888490673, guid: 4551128542dfb2d4e9c393be4686ec28, type: 3}
   maxAmmo: 30
   shootForce: 15
   fireRate: 0.08
   dropForce: 6
   drag: 7
+  fireTriggerName: arShoot

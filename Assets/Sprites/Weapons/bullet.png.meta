@@ -1,19 +1,13 @@
 fileFormatVersion: 2
-guid: a8588d4dc5ac8de4a93f7b51fea71f4b
+guid: e3d480c2fc9d80243a676e1794307bc7
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 6182765633706018272
-    second: crosshair_shot_2_0
+      213: -2346302928887187388
+    second: bullet_0
   - first:
-      213: -3168349036563817902
-    second: crosshair_shot_2_1
-  - first:
-      213: -5906516539243732004
-    second: crosshair_shot_2_2
-  - first:
-      213: -3235517088895883645
-    second: crosshair_shot_2_3
+      213: 5379323082974078785
+    second: bullet_1
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -46,7 +40,7 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: 1
+    filterMode: 0
     aniso: 1
     mipBias: 0
     wrapU: 1
@@ -55,12 +49,12 @@ TextureImporter:
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
-  spriteMode: 2
+  spriteMode: 1
   spriteExtrude: 1
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 100
+  spritePixelsToUnits: 20
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -109,89 +103,45 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: crosshair_shot_2_0
+      name: bullet_0
       rect:
         serializedVersion: 2
-        x: 4
-        y: 48
-        width: 20
-        height: 21
+        x: 0
+        y: 0
+        width: 12
+        height: 86
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 0e54a8e06989dc550800000000000000
-      internalID: 6182765633706018272
+      spriteID: 448783cdae1407fd0800000000000000
+      internalID: -2346302928887187388
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: crosshair_shot_2_1
+      name: bullet_1
       rect:
         serializedVersion: 2
-        x: 50
-        y: 48
-        width: 20
-        height: 21
+        x: 5
+        y: 0
+        width: 6
+        height: 13
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 25a992f7653c704d0800000000000000
-      internalID: -3168349036563817902
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: crosshair_shot_2_2
-      rect:
-        serializedVersion: 2
-        x: 4
-        y: 4
-        width: 20
-        height: 21
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: cd3686a6086d70ea0800000000000000
-      internalID: -5906516539243732004
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: crosshair_shot_2_3
-      rect:
-        serializedVersion: 2
-        x: 50
-        y: 4
-        width: 20
-        height: 21
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 386a7a3a9522913d0800000000000000
-      internalID: -3235517088895883645
+      spriteID: 147aab4d7d137aa40800000000000000
+      internalID: 5379323082974078785
       vertices: []
       indices: 
       edges: []
@@ -200,7 +150,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: 5e97eb03825dee720800000000000000
     internalID: 0
     vertices: []
     indices: 
@@ -210,10 +160,8 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      crosshair_shot_2_0: 6182765633706018272
-      crosshair_shot_2_1: -3168349036563817902
-      crosshair_shot_2_2: -5906516539243732004
-      crosshair_shot_2_3: -3235517088895883645
+      bullet_0: -2346302928887187388
+      bullet_1: 5379323082974078785
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

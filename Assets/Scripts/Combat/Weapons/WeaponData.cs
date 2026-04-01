@@ -1,6 +1,13 @@
 using UnityEngine;
 
-using UnityEngine;
+public enum WeaponFireAnimationType
+{
+    None,
+    Melee,
+    Pistol,
+    Rifle,
+    Shotgun
+}
 
 [CreateAssetMenu(menuName = "Weapons/Weapon Data", fileName = "NewWeaponData")]
 public class WeaponData : ScriptableObject
@@ -9,7 +16,7 @@ public class WeaponData : ScriptableObject
     public string weaponID = "gun_default";
 
     [Header("Visual")]
-    public Sprite bodySprite;
+    public AnimatorOverrideController bodyOverrideController;
 
     [Header("Projectile")]
     public GameObject bulletPrefab;
@@ -22,4 +29,8 @@ public class WeaponData : ScriptableObject
     [Header("Drop")]
     public float dropForce = 6f;
     public float drag = 7f;
+
+    [Header("Animation")]
+    [SerializeField] private WeaponFireAnimationType fireAnimationType = WeaponFireAnimationType.None;
+    public WeaponFireAnimationType FireAnimationType => fireAnimationType;
 }

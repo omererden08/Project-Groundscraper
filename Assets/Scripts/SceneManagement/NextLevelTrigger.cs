@@ -40,6 +40,15 @@ public class NextLevelTrigger : MonoBehaviour
         if (StageClearManager.Instance != null && StageClearManager.Instance.AliveEnemyCount > 0)
             return;
 
+        Transform weaponHoldPoint = other.transform.Find("WeaponHoldPoint");
+        if (weaponHoldPoint != null)
+        {
+            for (int i = weaponHoldPoint.childCount - 1; i >= 0; i--)
+            {
+                Object.Destroy(weaponHoldPoint.GetChild(i).gameObject);
+            }
+        }
+
         LevelTransitionController.Instance?.LoadNextLevel();
     }
 }

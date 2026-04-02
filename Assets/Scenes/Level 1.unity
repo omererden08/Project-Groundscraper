@@ -4823,6 +4823,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CrosshairController
   crosshairImage: {fileID: 1286531695}
+  animator: {fileID: 0}
+  shootTriggerName: Shoot
   smoothTime: 0.04
   maxSpeed: 10000
   screenPadding: 20

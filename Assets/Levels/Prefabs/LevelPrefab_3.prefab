@@ -207,7 +207,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemySpawnPoint
   type: 0
   spawnOnLevelStart: 1
-  delay: 0.25
+  delay: 0
   patrolRootOverride: {fileID: 4336664131909360821}
 --- !u!1 &1753270176990913407
 GameObject:
@@ -12155,7 +12155,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemySpawnPoint
   type: 0
   spawnOnLevelStart: 1
-  delay: 0.25
+  delay: 0
   patrolRootOverride: {fileID: 6829322923820216426}
 --- !u!1 &6494754892216637590
 GameObject:
@@ -12203,7 +12203,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemySpawnPoint
   type: 0
   spawnOnLevelStart: 1
-  delay: 0.25
+  delay: 0
   patrolRootOverride: {fileID: 5500434102056667414}
 --- !u!1 &6679434728349885873
 GameObject:
@@ -12251,8 +12251,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemySpawnPoint
   type: 0
   spawnOnLevelStart: 1
-  delay: 0.25
-  patrolRootOverride: {fileID: 2218285782167947374}
+  delay: 0
+  patrolRootOverride: {fileID: 1965707590842270368}
 --- !u!1 &6847958394900410702
 GameObject:
   m_ObjectHideFlags: 0
@@ -12605,7 +12605,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemySpawnPoint
   type: 0
   spawnOnLevelStart: 1
-  delay: 0.25
+  delay: 0
   patrolRootOverride: {fileID: 5358914001716819637}
 --- !u!1 &8564346641112524210
 GameObject:
@@ -12717,7 +12717,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemySpawnPoint
   type: 1
   spawnOnLevelStart: 1
-  delay: 0.25
+  delay: 0
   patrolRootOverride: {fileID: 2218285782167947374}
 --- !u!1 &8805466950421275505
 GameObject:

@@ -30,8 +30,11 @@ public class PlayerController : MonoBehaviour, IMeleeAttacker, IDamageable
     private Vector2 dirToMouseFromPlayer;
 
     private IWeapon currentWeapon;
+    private IWeapon preservedWeapon;
     private AmmoUI ammoUI;
 
+    private float baseMeleeRange;
+    private float baseMeleeRadius;
 
     public Transform Transform => transform;
     public Vector2 AimDirection => aimDirection;
@@ -59,6 +62,9 @@ public class PlayerController : MonoBehaviour, IMeleeAttacker, IDamageable
         rb = GetComponent<Rigidbody2D>();
         rb.freezeRotation = true;
         rb.interpolation = RigidbodyInterpolation2D.Interpolate;
+
+        baseMeleeRange = meleeRange;
+        baseMeleeRadius = meleeRadius;
 
         if (weaponHoldPoint == null)
             weaponHoldPoint = transform.Find("WeaponHoldPoint");
@@ -191,6 +197,7 @@ public class PlayerController : MonoBehaviour, IMeleeAttacker, IDamageable
 
         if (weapon is RangedWeapon ranged)
         {
+            ResetMeleeBonus();
             PlayerEvents.RaiseWeaponEquipped(ranged.Data);
 
             if (ammoUI == null)
@@ -204,6 +211,7 @@ public class PlayerController : MonoBehaviour, IMeleeAttacker, IDamageable
         }
         else
         {
+            ResetMeleeBonus();
             PlayerEvents.RaiseWeaponUnequipped();
         }
     }
@@ -222,9 +230,65 @@ public class PlayerController : MonoBehaviour, IMeleeAttacker, IDamageable
             ammoUI?.Clear();
         }
 
+        ResetMeleeBonus();
+
         currentWeapon = null;
         PlayerEvents.RaiseWeaponUnequipped();
     }
+
+    public void AddMeleeBonus(float rangeBonus, float radiusBonus)
+    {
+        meleeRange = baseMeleeRange + rangeBonus;
+        meleeRadius = baseMeleeRadius + radiusBonus;
+    }
+
+    public void ResetMeleeBonus()
+    {
+        meleeRange = baseMeleeRange;
+        meleeRadius = baseMeleeRadius;
+    }
+
+    public void PreserveEquippedWeaponForLevelTransition()
+    {
+        preservedWeapon = currentWeapon;
+
+        if (preservedWeapon == null || weaponHoldPoint == null)
+            return;
+
+        if (preservedWeapon is MonoBehaviour weaponMb)
+        {
+            weaponMb.transform.SetParent(weaponHoldPoint);
+            weaponMb.transform.localPosition = Vector3.zero;
+            weaponMb.transform.localRotation = Quaternion.identity;
+        }
+    }
+
+    public void RestoreEquippedWeaponAfterLevelTransition()
+    {
+        if (preservedWeapon == null || weaponHoldPoint == null)
+            return;
+
+        currentWeapon = preservedWeapon;
+        currentWeapon.OnEquip(weaponHoldPoint);
+
+        if (currentWeapon is RangedWeapon ranged)
+        {
+            ResetMeleeBonus();
+            PlayerEvents.RaiseWeaponEquipped(ranged.Data);
+
+            if (ammoUI == null)
+                ammoUI = FindFirstObjectByType<AmmoUI>();
+
+            ammoUI?.SetWeapon(ranged);
+        }
+        else if (currentWeapon is MeleeWeapon melee)
+        {
+            PlayerEvents.RaiseWeaponEquipped(melee.Data);
+        }
+
+        preservedWeapon = null;
+    }
+
     public void Die()
     {
         StateMachine.ChangeState(DeadState);
@@ -238,7 +302,10 @@ public class PlayerController : MonoBehaviour, IMeleeAttacker, IDamageable
 
         hasAim = false;
         currentWeapon = null;
+        preservedWeapon = null;
         wasMovingLastFrame = false;
+
+        ResetMeleeBonus();
 
         PlayerEvents.RaisePlayerMoveStateChanged(false);
         PlayerEvents.RaiseWeaponUnequipped();

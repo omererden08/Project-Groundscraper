@@ -3,15 +3,41 @@ using UnityEngine;
 [RequireComponent(typeof(BoxCollider2D))]
 public class NextLevelTrigger : MonoBehaviour
 {
-    private void Reset()
+    private BoxCollider2D triggerCollider;
+
+    private void Awake()
     {
-        var col = GetComponent<BoxCollider2D>();
-        col.isTrigger = true;
+        triggerCollider = GetComponent<BoxCollider2D>();
+        triggerCollider.isTrigger = true;
+        triggerCollider.enabled = false;
+    }
+
+    private void OnEnable()
+    {
+        if (StageClearManager.Instance != null)
+            StageClearManager.Instance.OnStageCleared += HandleStageCleared;
+    }
+
+    private void OnDisable()
+    {
+        if (StageClearManager.Instance != null)
+            StageClearManager.Instance.OnStageCleared -= HandleStageCleared;
+    }
+
+    private void HandleStageCleared()
+    {
+        if (triggerCollider != null)
+            triggerCollider.enabled = true;
+
+        Debug.Log("Exit trigger activated.");
     }
 
     private void OnTriggerEnter2D(Collider2D other)
     {
         if (!other.CompareTag("Player"))
+            return;
+
+        if (StageClearManager.Instance != null && StageClearManager.Instance.AliveEnemyCount > 0)
             return;
 
         LevelTransitionController.Instance?.LoadNextLevel();

@@ -14,5 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::LevelData
   levelId: Level 3
   buildIndex: 2
-  levelPrefab: {fileID: 0}
+  levelPrefab: {fileID: 6232038724890892094, guid: b7e23e935ed76024788f24bb85e94857, type: 3}
   music: {fileID: 0}

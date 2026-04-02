@@ -12,10 +12,16 @@ public class EnemyController : EnemyBase, IDamageable, IMeleeAttacker
     [Tooltip("Boşsa prefab içindeki 'Checkpoints' child'ını arar. Level bazlı patrol için spawn anında override verebilirsin.")]
     [SerializeField] private Transform patrolPointsRoot;
 
+    [Header("Animation")]
+    [SerializeField] private string bodyObjectName = "EnemyBody";
+    [SerializeField] private string legsObjectName = "EnemyLegs";
+    [SerializeField] private string isMovingParam = "IsMoving";
+    [SerializeField] private string shootTriggerName = "Shoot";
+    [SerializeField] private float moveAnimThreshold = 0.01f;
+
     [Header("Debug")]
     [SerializeField] private string currentStateName;
 
-    // Runtime
     private Vector3 rememberedPlayerPosition;
     private bool hasRememberedPlayerPosition;
     private Vector3[] patrolPoints = System.Array.Empty<Vector3>();
@@ -26,7 +32,11 @@ public class EnemyController : EnemyBase, IDamageable, IMeleeAttacker
     private bool isDead;
     private float currentMoveSpeed;
 
-    // Public Accessors
+    private Transform bodyTransform;
+    private Animator bodyAnimator;
+    private Transform legsTransform;
+    private Animator legsAnimator;
+
     public EnemyData Data => data;
     public Transform Player => player;
     public Transform FirePoint => firePoint;
@@ -62,7 +72,6 @@ public class EnemyController : EnemyBase, IDamageable, IMeleeAttacker
         hasRememberedPlayerPosition = false;
     }
 
-    // States
     public IdleState IdleState { get; private set; }
     public PatrolState PatrolState { get; private set; }
     public ChaseState ChaseState { get; private set; }
@@ -76,18 +85,17 @@ public class EnemyController : EnemyBase, IDamageable, IMeleeAttacker
         if (data != null)
             currentMoveSpeed = data.moveSpeed;
 
-        // Ranged ise, firePoint assign edilmemişse child içinden bul
         if (firePoint == null && data != null && data.isRanged)
             firePoint = transform.Find("FirePoint");
 
-        // Patrol root boşsa prefab içindeki "Checkpoints" child'ını dene
         if (patrolPointsRoot == null)
         {
             var t = transform.Find("Checkpoints");
             if (t != null) patrolPointsRoot = t;
         }
 
-        // FSM kur (başlatmayı spawn anında yapacağız)
+        CacheAnimationRefs();
+
         stateMachine = new EnemyStateMachine();
         IdleState = new IdleState(this, stateMachine);
         PatrolState = new PatrolState(this, stateMachine);
@@ -95,10 +103,6 @@ public class EnemyController : EnemyBase, IDamageable, IMeleeAttacker
         AttackState = new AttackState(this, stateMachine);
     }
 
-    /// <summary>
-    /// Pool/Spawner spawn anında çağırır.
-    /// Player ve (istersen) level bazlı patrol root burada verilir.
-    /// </summary>
     public void InitializeForSpawn(Transform playerTransform, Transform overridePatrolRoot = null)
     {
         player = playerTransform;
@@ -107,16 +111,12 @@ public class EnemyController : EnemyBase, IDamageable, IMeleeAttacker
             patrolPointsRoot = overridePatrolRoot;
 
         patrolPoints = BuildPatrolPoints(patrolPointsRoot);
-
-        // Debug istersen:
-        // Debug.Log($"{name} patrol count = {patrolPoints.Length} root={(patrolPointsRoot ? patrolPointsRoot.name : "null")}");
     }
 
     private Vector3[] BuildPatrolPoints(Transform root)
     {
         if (root == null) return System.Array.Empty<Vector3>();
 
-        // ✅ nested dahil tüm child'ları topla, root'u hariç tut
         var list = new List<Transform>();
         var all = root.GetComponentsInChildren<Transform>(true);
         for (int i = 0; i < all.Length; i++)
@@ -126,7 +126,6 @@ public class EnemyController : EnemyBase, IDamageable, IMeleeAttacker
             list.Add(t);
         }
 
-        // ✅ İsim sıralaması: P0, P1, P2 ... gibi isimlerde doğru rota verir
         list.Sort((a, b) => string.CompareOrdinal(a.name, b.name));
 
         var points = new Vector3[list.Count];
@@ -148,6 +147,8 @@ public class EnemyController : EnemyBase, IDamageable, IMeleeAttacker
         if (data != null)
             currentMoveSpeed = data.moveSpeed;
 
+        SetMoveAnimation(false);
+
         var startState = (patrolPoints != null && patrolPoints.Length > 0)
             ? (EnemyState)PatrolState
             : IdleState;
@@ -159,6 +160,7 @@ public class EnemyController : EnemyBase, IDamageable, IMeleeAttacker
     {
         rb.linearVelocity = Vector2.zero;
         pathfinder.StopTracking();
+        SetMoveAnimation(false);
     }
 
     private void Update()
@@ -166,6 +168,8 @@ public class EnemyController : EnemyBase, IDamageable, IMeleeAttacker
         if (isDead) return;
 
         stateMachine.Update();
+        UpdateMoveAnimation();
+
         currentStateName = stateMachine.CurrentState?.GetType().Name;
     }
 
@@ -197,7 +201,11 @@ public class EnemyController : EnemyBase, IDamageable, IMeleeAttacker
         rb.linearVelocity = dir * currentMoveSpeed;
     }
 
-    public void StopMoving() => rb.linearVelocity = Vector2.zero;
+    public void StopMoving()
+    {
+        rb.linearVelocity = Vector2.zero;
+        SetMoveAnimation(false);
+    }
 
     public void RotateTowards(Vector2 direction)
     {
@@ -249,6 +257,8 @@ public class EnemyController : EnemyBase, IDamageable, IMeleeAttacker
     {
         if (data == null) return;
 
+        TriggerShootAnimation();
+
         if (data.isRanged && firePoint != null)
         {
             var bullet = BulletPool.Instance.GetBullet(data.bulletPrefab);
@@ -272,7 +282,86 @@ public class EnemyController : EnemyBase, IDamageable, IMeleeAttacker
         isDead = true;
 
         StopMoving();
+        SetMoveAnimation(false);
         DespawnToPool();
+    }
+
+    #endregion
+
+    #region Animation
+
+    private void CacheAnimationRefs()
+    {
+        bodyTransform = FindChildByName(transform, bodyObjectName);
+        if (bodyTransform != null)
+            bodyAnimator = bodyTransform.GetComponent<Animator>();
+
+        legsTransform = FindChildByName(transform, legsObjectName);
+        if (legsTransform != null)
+            legsAnimator = legsTransform.GetComponent<Animator>();
+    }
+
+    private void UpdateMoveAnimation()
+    {
+        bool isMoving = rb != null && rb.linearVelocity.sqrMagnitude > moveAnimThreshold * moveAnimThreshold;
+        SetMoveAnimation(isMoving);
+    }
+
+    private void SetMoveAnimation(bool isMoving)
+    {
+        if (bodyAnimator != null && HasBoolParameter(bodyAnimator, isMovingParam))
+            bodyAnimator.SetBool(isMovingParam, isMoving);
+
+        if (legsAnimator != null && HasBoolParameter(legsAnimator, isMovingParam))
+            legsAnimator.SetBool(isMovingParam, isMoving);
+    }
+
+    private void TriggerShootAnimation()
+    {
+        if (bodyAnimator == null || !HasTriggerParameter(bodyAnimator, shootTriggerName))
+            return;
+
+        bodyAnimator.ResetTrigger(shootTriggerName);
+        bodyAnimator.SetTrigger(shootTriggerName);
+    }
+
+    private static bool HasBoolParameter(Animator animator, string paramName)
+    {
+        foreach (var p in animator.parameters)
+        {
+            if (p.name == paramName && p.type == AnimatorControllerParameterType.Bool)
+                return true;
+        }
+
+        return false;
+    }
+
+    private static bool HasTriggerParameter(Animator animator, string paramName)
+    {
+        foreach (var p in animator.parameters)
+        {
+            if (p.name == paramName && p.type == AnimatorControllerParameterType.Trigger)
+                return true;
+        }
+
+        return false;
+    }
+
+    private static Transform FindChildByName(Transform root, string childName)
+    {
+        if (root == null) return null;
+
+        Transform direct = root.Find(childName);
+        if (direct != null) return direct;
+
+        var all = root.GetComponentsInChildren<Transform>(true);
+        for (int i = 0; i < all.Length; i++)
+        {
+            if (all[i].name == childName)
+                return all[i];
+        }
+
+        return null;
     }
 
     #endregion

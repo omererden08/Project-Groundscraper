@@ -134,6 +134,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MeleeWeapon
   data: {fileID: 11400000, guid: 8e7ae27ff48a011408c56d64db13c8fb, type: 2}
   dragResetDelay: 1
+  meleeRangeBonus: 0.65
+  meleeRadiusBonus: 0.65
 --- !u!58 &785747443082440676
 CircleCollider2D:
   m_ObjectHideFlags: 0

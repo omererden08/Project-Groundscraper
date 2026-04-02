@@ -13,9 +13,12 @@ MonoBehaviour:
   m_Name: Ranged
   m_EditorClassIdentifier: Assembly-CSharp::EnemyData
   moveSpeed: 2
+  rotationSpeed: 720
   attackRange: 4.66
   attackDelay: 0.25
   isRanged: 1
-  rotationSpeed: 720
   projectilePrefab: {fileID: 2897616767888490673, guid: 4551128542dfb2d4e9c393be4686ec28, type: 3}
   projectileSpeed: 10
+  visionAngle: 90
+  visionRange: 8
+  bulletPrefab: {fileID: 2897616767888490673, guid: 4551128542dfb2d4e9c393be4686ec28, type: 3}

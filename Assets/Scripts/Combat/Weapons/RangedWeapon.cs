@@ -13,9 +13,11 @@ public abstract class RangedWeapon : MonoBehaviour, IWeapon
     protected SpriteRenderer spriteRenderer;
     protected Rigidbody2D rb;
     protected Collider2D weaponCollider;
+    protected Transform originalParent;
 
     protected bool isEquipped;
     protected float lastFireTime;
+
     public WeaponData Data => data;
     public virtual bool IsAutomatic => false;
     public int CurrentAmmo => currentAmmo;
@@ -45,9 +47,24 @@ public abstract class RangedWeapon : MonoBehaviour, IWeapon
         weaponCollider = GetComponent<Collider2D>();
     }
 
+    protected virtual void Start()
+    {
+        originalParent = transform.parent;
+    }
+
+    protected virtual void OnDisable()
+    {
+        PlayerEvents.OnShoot -= HandleShoot;
+    }
+
+    protected virtual void OnDestroy()
+    {
+        PlayerEvents.OnShoot -= HandleShoot;
+    }
+
     private void HandleShoot(Vector2 position, Vector2 direction)
     {
-        if (!isEquipped)
+        if (!this || !gameObject || !isEquipped)
             return;
 
         Use(direction);
@@ -62,13 +79,11 @@ public abstract class RangedWeapon : MonoBehaviour, IWeapon
         }
 
         Use(firePoint.right);
-
-
     }
 
     public void Use(Vector2 direction)
     {
-        if (!isEquipped)
+        if (!this || !gameObject || !isEquipped)
             return;
 
         if (data != null && Time.time < lastFireTime + data.fireRate)
@@ -110,7 +125,7 @@ public abstract class RangedWeapon : MonoBehaviour, IWeapon
         isEquipped = false;
         PlayerEvents.OnShoot -= HandleShoot;
 
-        transform.SetParent(null);
+        transform.SetParent(originalParent);
 
         if (weaponCollider != null)
             weaponCollider.enabled = true;

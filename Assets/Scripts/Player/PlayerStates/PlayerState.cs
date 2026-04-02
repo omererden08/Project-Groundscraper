@@ -292,6 +292,12 @@ public class PlayerDeadState : PlayerState
         Collider2D col = player.GetComponent<Collider2D>();
         if (col) col.enabled = false;
 
+        Transform weaponHoldPoint = player.transform.Find("WeaponHoldPoint");
+        if (weaponHoldPoint != null && weaponHoldPoint.childCount > 0)
+        {
+            Object.Destroy(weaponHoldPoint.GetChild(0).gameObject);
+        }
+
         Debug.Log("Player died.");
         LevelTransitionController.Instance.RestartLevel();
     }

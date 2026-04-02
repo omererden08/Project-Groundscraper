@@ -10,11 +10,16 @@ public class MeleeWeapon : MonoBehaviour, IWeapon
     [Header("Drop Physics")]
     [SerializeField] private float dragResetDelay = 1f;
 
+    [Header("Equip Bonus")]
+    [SerializeField] private float meleeRangeBonus = 1f;
+    [SerializeField] private float meleeRadiusBonus = 1f;
+
     private Rigidbody2D rb;
     private SpriteRenderer spriteRenderer;
     private Collider2D weaponCollider;
 
     private bool isEquipped;
+    private Transform originalParent;
 
     public string WeaponID => data != null ? data.weaponID : string.Empty;
     public bool IsRanged => false;
@@ -33,6 +38,21 @@ public class MeleeWeapon : MonoBehaviour, IWeapon
         }
     }
 
+    private void Start()
+    {
+        originalParent = transform.parent;
+    }
+
+    private void OnDisable()
+    {
+        PlayerEvents.OnMeleeAttack -= HandleMeleeAttack;
+    }
+
+    private void OnDestroy()
+    {
+        PlayerEvents.OnMeleeAttack -= HandleMeleeAttack;
+    }
+
     private void HandleMeleeAttack(Vector2 position, Vector2 direction)
     {
         if (!isEquipped)
@@ -48,6 +68,17 @@ public class MeleeWeapon : MonoBehaviour, IWeapon
             Debug.LogWarning("Tried to use unequipped weapon.");
             return;
         }
+
+        StopAllCoroutines();
+        StartCoroutine(DoAttackWithDelay(0.25f));
+    }
+
+    private IEnumerator DoAttackWithDelay(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+
+        if (!isEquipped || transform.parent == null)
+            yield break;
 
         IMeleeAttacker attacker = transform.parent.GetComponentInParent<IMeleeAttacker>();
         if (attacker != null)
@@ -75,16 +106,24 @@ public class MeleeWeapon : MonoBehaviour, IWeapon
 
         isEquipped = true;
 
+        PlayerController player = weaponHolder.GetComponentInParent<PlayerController>();
+        if (player != null)
+            player.AddMeleeBonus(meleeRangeBonus, meleeRadiusBonus);
+
         PlayerEvents.OnMeleeAttack -= HandleMeleeAttack;
         PlayerEvents.OnMeleeAttack += HandleMeleeAttack;
     }
 
     public void OnDrop(Vector2 dropDirection)
     {
+        PlayerController player = GetComponentInParent<PlayerController>();
+        if (player != null)
+            player.ResetMeleeBonus();
+
         isEquipped = false;
         PlayerEvents.OnMeleeAttack -= HandleMeleeAttack;
 
-        transform.SetParent(null);
+        transform.SetParent(originalParent);
 
         if (rb != null)
         {

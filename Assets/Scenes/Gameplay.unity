@@ -211,6 +211,9 @@ MonoBehaviour:
   - type: 0
     prefab: {fileID: 101323422641288666, guid: f5f5170d89a539546855e3b12d977d72, type: 3}
     initialSize: 5
+  - type: 1
+    prefab: {fileID: 916396338749219000, guid: 437ed44345a57b34bb030e811adbf753, type: 3}
+    initialSize: 5
 --- !u!1 &210526977
 GameObject:
   m_ObjectHideFlags: 0
@@ -575,6 +578,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CrosshairController
   crosshairImage: {fileID: 627978506}
+  animator: {fileID: 0}
+  shootTriggerName: Shoot
   smoothTime: 0.04
   maxSpeed: 10000
   screenPadding: 20

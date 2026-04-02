@@ -29,6 +29,11 @@ public class StageClearManager : MonoBehaviour
         Instance = this;
     }
 
+    private void OnEnable()
+    {
+        ResetStage();
+    }
+
     public void ResetStage()
     {
         aliveEnemyCount = 0;

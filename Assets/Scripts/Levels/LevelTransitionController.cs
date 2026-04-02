@@ -39,7 +39,6 @@ public class LevelTransitionController : MonoBehaviour
         GameEvents.OnLevelLoadRequested -= HandleLevelLoadRequested;
     }
 
-    // MainMenu Start butonu bunu çaðýrabilir
     public void StartGame()
     {
         LoadLevelById(firstLevelId);
@@ -49,7 +48,6 @@ public class LevelTransitionController : MonoBehaviour
     {
         pendingLevelId = levelId;
 
-        // Gameplay yüklü deðilse önce Gameplay sahnesini yüklet
         if (!IsSceneLoaded(gameplayScene))
         {
             GameManager.Instance?.SetGameState(GameState.Playing);
@@ -57,7 +55,6 @@ public class LevelTransitionController : MonoBehaviour
             return;
         }
 
-        // Gameplay zaten yüklüyse direkt level yükle
         LoadPendingLevelNow();
     }
 
@@ -102,11 +99,19 @@ public class LevelTransitionController : MonoBehaviour
             return;
         }
 
-        LevelLoader.Instance.Load(data);
-        GameManager.Instance?.SetGameState(GameState.Playing);
+        PlayerController player = FindFirstObjectByType<PlayerController>();
+        if (player != null)
+            player.PreserveEquippedWeaponForLevelTransition();
 
+        LevelLoader.Instance.Load(data);
+
+        if (player != null)
+            player.RestoreEquippedWeaponAfterLevelTransition();
+
+        GameManager.Instance?.SetGameState(GameState.Playing);
         pendingLevelId = null;
     }
+
     public void LoadNextLevel()
     {
         if (LevelLoader.Instance == null || levelDatabase == null)
@@ -122,13 +127,13 @@ public class LevelTransitionController : MonoBehaviour
         var next = levelDatabase.GetByIndex(nextIndex);
         if (next == null)
         {
-            // Oyun bitti -> ana menü ya da credits
             ReturnToMainMenu();
             return;
         }
 
         LoadLevelById(next.levelId);
     }
+
     private bool IsSceneLoaded(string sceneName)
     {
         var s = SceneManager.GetSceneByName(sceneName);

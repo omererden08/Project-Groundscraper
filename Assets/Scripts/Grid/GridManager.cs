@@ -155,7 +155,7 @@ public class GridManager : MonoBehaviour
         foreach (Node n in grid)
             yield return n;
     }
-
+    /*
 #if UNITY_EDITOR
     private void OnDrawGizmos()
     {
@@ -171,5 +171,5 @@ public class GridManager : MonoBehaviour
             Gizmos.DrawCube(n.worldPosition, Vector3.one * (nodeDiameter - 0.1f));
         }
     }
-#endif
+#endif*/
 }

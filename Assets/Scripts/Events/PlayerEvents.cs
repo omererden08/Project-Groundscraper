@@ -64,4 +64,5 @@ public static class PlayerEvents
     {
         OnWeaponDropped?.Invoke(weaponID);
     }
+
 }

@@ -274,7 +274,7 @@ PolygonCollider2D:
   m_CallbackLayers:
     serializedVersion: 2
     m_Bits: 4294967295
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
@@ -290,12 +290,14 @@ PolygonCollider2D:
   m_AutoTiling: 0
   m_Points:
     m_Paths:
-    - - {x: -0.010277338, y: 0.24975437}
-      - {x: -0.5245471, y: 0.098331556}
-      - {x: -0.5318547, y: -0.1389366}
-      - {x: -0.058502257, y: -0.31056616}
-      - {x: 0.48501197, y: -0.1820994}
-      - {x: 0.48343766, y: 0.093193024}
+    - - {x: 0.5138668, y: 0.47071713}
+      - {x: 0.0027443804, y: 0.47081327}
+      - {x: -0.4504497, y: 0.47312725}
+      - {x: -0.6992619, y: 0.13944091}
+      - {x: -0.6551827, y: -0.14407526}
+      - {x: -0.37196103, y: -0.35681418}
+      - {x: 0.3770999, y: -0.3825075}
+      - {x: 0.6992617, y: -0.10207641}
   m_UseDelaunayMesh: 0
 --- !u!1 &7241039859355560172
 GameObject:

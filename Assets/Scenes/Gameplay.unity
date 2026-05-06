@@ -524,7 +524,7 @@ MonoBehaviour:
   nodeRadius: 0.15
   unwalkableMask:
     serializedVersion: 2
-    m_Bits: 512
+    m_Bits: 2560
   obstacleBuffer: 0.2
 --- !u!1 &627978505
 GameObject:

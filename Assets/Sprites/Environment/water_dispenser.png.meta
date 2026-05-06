@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 194736b581dc06e4397dc7a14ea0549b
+guid: 76c533b61ea45eb4f9e83e26cb64e00f
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -8325837573663001809
-    second: office_desk_1_0
+      213: -2090183193197671651
+    second: water_dispenser_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -100,13 +100,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: office_desk_1_0
+      name: water_dispenser_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 411
-        height: 255
+        width: 124
+        height: 116
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -115,8 +115,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: f237734c6dea47c80800000000000000
-      internalID: -8325837573663001809
+      spriteID: d1b06f5c57d2ef2e0800000000000000
+      internalID: -2090183193197671651
       vertices: []
       indices: 
       edges: []
@@ -135,7 +135,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      office_desk_1_0: -8325837573663001809
+      water_dispenser_0: -2090183193197671651
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

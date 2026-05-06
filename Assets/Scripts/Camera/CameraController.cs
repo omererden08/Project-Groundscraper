@@ -12,7 +12,8 @@ public class CameraController : MonoBehaviour
     [Header("Player Deadzone")]
     [SerializeField] private float deadzoneRadius = 0.5f;
 
-    private ICameraStrategy currentStrategy;
+    private ICameraStrategy followStrategy;
+    private ICameraStrategy shakeStrategy;
 
     public Transform Target => target;
     public float SmoothTime => smoothTime;
@@ -22,7 +23,11 @@ public class CameraController : MonoBehaviour
     private void Start()
     {
         ResolveTarget();
-        SetStrategy(new MidpointAimStrategy());
+
+        SetFollowStrategy(new MidpointAimStrategy());
+
+        shakeStrategy = new CameraShakeStrategy();
+        shakeStrategy.OnEnter(this);
     }
 
     private void LateUpdate()
@@ -30,7 +35,16 @@ public class CameraController : MonoBehaviour
         if (target == null)
             ResolveTarget();
 
-        currentStrategy?.TickLate(Time.deltaTime);
+        float dt = Time.deltaTime;
+
+        followStrategy?.TickLate(dt);
+        shakeStrategy?.TickLate(dt);
+    }
+
+    private void OnDestroy()
+    {
+        followStrategy?.OnExit();
+        shakeStrategy?.OnExit();
     }
 
     private void ResolveTarget()
@@ -39,6 +53,7 @@ public class CameraController : MonoBehaviour
             return;
 
         GameObject player = GameObject.FindGameObjectWithTag("Player");
+
         if (player != null)
         {
             target = player.transform;
@@ -54,10 +69,12 @@ public class CameraController : MonoBehaviour
         target = newTarget;
     }
 
-    public void SetStrategy(ICameraStrategy strategy)
+    public void SetFollowStrategy(ICameraStrategy strategy)
     {
-        currentStrategy?.OnExit();
-        currentStrategy = strategy;
-        currentStrategy?.OnEnter(this);
+        followStrategy?.OnExit();
+
+        followStrategy = strategy;
+
+        followStrategy?.OnEnter(this);
     }
 }

@@ -7,6 +7,10 @@ public class GameManager : MonoBehaviour
     [SerializeField] private GameState currentState = GameState.MainMenu;
     public GameState CurrentState => currentState;
 
+    private string sceneAfterCutscene;
+
+    public string SceneAfterCutscene => sceneAfterCutscene;
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -17,6 +21,39 @@ public class GameManager : MonoBehaviour
 
         Instance = this;
         DontDestroyOnLoad(gameObject);
+    }
+
+    private void OnEnable()
+    {
+        GameEvents.OnCutsceneRequested += HandleCutsceneRequested;
+        GameEvents.OnCutsceneFinished += HandleCutsceneFinished;
+    }
+
+    private void OnDisable()
+    {
+        GameEvents.OnCutsceneRequested -= HandleCutsceneRequested;
+        GameEvents.OnCutsceneFinished -= HandleCutsceneFinished;
+    }
+
+    private void HandleCutsceneRequested(string cutsceneSceneName, string nextSceneName)
+    {
+        sceneAfterCutscene = nextSceneName;
+
+        SetGameState(GameState.Cutscene);
+
+        GameEvents.RaiseCutsceneStarted();
+        GameEvents.RaiseSceneLoadRequested(cutsceneSceneName);
+    }
+
+    private void HandleCutsceneFinished()
+    {
+        SetGameState(GameState.Playing);
+
+        if (!string.IsNullOrEmpty(sceneAfterCutscene))
+        {
+            GameEvents.RaiseSceneLoadRequested(sceneAfterCutscene);
+            sceneAfterCutscene = null;
+        }
     }
 
     public void SetGameState(GameState newState)
@@ -44,6 +81,9 @@ public class GameManager : MonoBehaviour
                 break;
 
             case GameState.Cutscene:
+                Time.timeScale = 1f;
+                break;
+
             case GameState.MainMenu:
                 Time.timeScale = 1f;
                 break;

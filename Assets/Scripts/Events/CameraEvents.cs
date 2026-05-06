@@ -8,4 +8,7 @@ public static class CameraEvents
 
     // (midpoint)
     public static Action<Vector3> OnCameraFocusPointChanged;
+
+    // (duration, intensity)
+    public static Action<float, float> OnCameraShakeRequested;
 }

@@ -162,8 +162,11 @@ public class PlayerShootState : PlayerState
     public override void Enter()
     {
         timer = 0f;
-
+            
         PlayerEvents.RaiseShoot(player.transform.position, player.AimDirection);
+
+        CameraEvents.OnCameraShakeRequested?.Invoke(0.12f, 0.15f);
+
         ConsumeSemiAutoInputIfNeeded();
     }
 

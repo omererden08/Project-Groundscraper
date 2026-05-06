@@ -20,11 +20,18 @@ public static class GameEvents
     public static event Action<string> OnSceneLoadRequested;
     public static event Action<string> OnSceneLoadStarted;
     public static event Action<string> OnSceneLoadCompleted;
+
     public static event Action<string> OnLevelLoadRequested;
     public static event Action<string> OnLevelLoaded;
 
+    // Cutscene
+    public static event Action<string, string> OnCutsceneRequested;
+    public static event Action OnCutsceneStarted;
+    public static event Action OnCutsceneFinished;
+
     public static void RaiseLevelLoadRequested(string levelId) => OnLevelLoadRequested?.Invoke(levelId);
     public static void RaiseLevelLoaded(string levelId) => OnLevelLoaded?.Invoke(levelId);
+
     public static void RaiseGameStateChanged(GameState state) => OnGameStateChanged?.Invoke(state);
     public static void RaiseGamePaused() => OnGamePaused?.Invoke();
     public static void RaiseGameResumed() => OnGameResumed?.Invoke();
@@ -34,4 +41,10 @@ public static class GameEvents
     public static void RaiseSceneLoadRequested(string sceneName) => OnSceneLoadRequested?.Invoke(sceneName);
     public static void RaiseSceneLoadStarted(string sceneName) => OnSceneLoadStarted?.Invoke(sceneName);
     public static void RaiseSceneLoadCompleted(string sceneName) => OnSceneLoadCompleted?.Invoke(sceneName);
+
+    public static void RaiseCutsceneRequested(string cutsceneSceneName, string nextSceneName)
+        => OnCutsceneRequested?.Invoke(cutsceneSceneName, nextSceneName);
+
+    public static void RaiseCutsceneStarted() => OnCutsceneStarted?.Invoke();
+    public static void RaiseCutsceneFinished() => OnCutsceneFinished?.Invoke();
 }

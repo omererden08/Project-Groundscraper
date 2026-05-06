@@ -520,7 +520,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 84e944bc77423a74fb677593abddbf48, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GridManager
-  gridWorldSize: {x: 40, y: 30}
+  gridWorldSize: {x: 100, y: 100}
   nodeRadius: 0.15
   unwalkableMask:
     serializedVersion: 2

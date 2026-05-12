@@ -2,7 +2,6 @@
 
 public class MainMenuButtons : MonoBehaviour
 {
-    [SerializeField] private string firstLevelId = "Level 1";
 
     private void OnEnable()
     {
@@ -11,7 +10,7 @@ public class MainMenuButtons : MonoBehaviour
 
     public void OnClickStart()
     {
-        LevelTransitionController.Instance?.LoadLevelById(firstLevelId);
+        LevelTransitionController.Instance.StartGame();
     }
 
     public void OnClickQuit()

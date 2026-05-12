@@ -7,7 +7,12 @@ public class LevelTransitionController : MonoBehaviour
 
     [Header("Scenes")]
     [SerializeField] private string mainMenuScene = "MainMenu";
+    [SerializeField] private string cutsceneScene = "Cutscene";
     [SerializeField] private string gameplayScene = "Gameplay";
+    [SerializeField] private string endingScene = "Ending";
+
+    [Header("Cutscene")]
+    [SerializeField] private bool playCutsceneOnStart = true;
 
     [Header("Levels")]
     [SerializeField] private LevelDatabase levelDatabase;
@@ -41,6 +46,14 @@ public class LevelTransitionController : MonoBehaviour
 
     public void StartGame()
     {
+        pendingLevelId = firstLevelId;
+
+        if (playCutsceneOnStart)
+        {
+            GameEvents.RaiseCutsceneRequested(cutsceneScene, gameplayScene);
+            return;
+        }
+
         LoadLevelById(firstLevelId);
     }
 
@@ -61,8 +74,17 @@ public class LevelTransitionController : MonoBehaviour
     public void ReturnToMainMenu()
     {
         pendingLevelId = null;
+
         GameManager.Instance?.SetGameState(GameState.MainMenu);
         GameEvents.RaiseSceneLoadRequested(mainMenuScene);
+    }
+
+    public void LoadEndingScene()
+    {
+        pendingLevelId = null;
+
+        GameManager.Instance?.SetGameState(GameState.Cutscene);
+        GameEvents.RaiseSceneLoadRequested(endingScene);
     }
 
     public void RestartLevel()
@@ -87,6 +109,7 @@ public class LevelTransitionController : MonoBehaviour
     private void LoadPendingLevelNow()
     {
         var data = levelDatabase != null ? levelDatabase.GetById(pendingLevelId) : null;
+
         if (data == null)
         {
             Debug.LogError($"LevelTransitionController: LevelData bulunamadý: {pendingLevelId}");
@@ -100,6 +123,7 @@ public class LevelTransitionController : MonoBehaviour
         }
 
         PlayerController player = FindFirstObjectByType<PlayerController>();
+
         if (player != null)
             player.PreserveEquippedWeaponForLevelTransition();
 
@@ -109,6 +133,7 @@ public class LevelTransitionController : MonoBehaviour
             player.RestoreEquippedWeaponAfterLevelTransition();
 
         GameManager.Instance?.SetGameState(GameState.Playing);
+
         pendingLevelId = null;
     }
 
@@ -118,6 +143,7 @@ public class LevelTransitionController : MonoBehaviour
             return;
 
         var current = LevelLoader.Instance.CurrentLevel;
+
         if (current == null)
             return;
 
@@ -125,9 +151,10 @@ public class LevelTransitionController : MonoBehaviour
         int nextIndex = currentIndex + 1;
 
         var next = levelDatabase.GetByIndex(nextIndex);
+
         if (next == null)
         {
-            ReturnToMainMenu();
+            LoadEndingScene();
             return;
         }
 

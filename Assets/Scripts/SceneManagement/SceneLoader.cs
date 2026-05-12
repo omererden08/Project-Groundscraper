@@ -11,11 +11,13 @@ public class SceneLoader : MonoBehaviour
     [Header("Fade Settings")]
     [SerializeField] private Image fadeImage;
     [SerializeField] private float fadeDuration = 0.5f;
+
+    [Header("Special Scenes")]
     [SerializeField] private string gameplaySceneName = "Gameplay";
 
-    private string currentLoadedScene;
     private bool isTransitioning;
     private bool waitForLevelLoadedBeforeFadeOut;
+    private string currentLoadedScene;
 
     private void Awake()
     {
@@ -27,6 +29,8 @@ public class SceneLoader : MonoBehaviour
 
         Instance = this;
         DontDestroyOnLoad(gameObject);
+
+        currentLoadedScene = SceneManager.GetActiveScene().name;
 
         if (fadeImage != null)
         {
@@ -43,11 +47,7 @@ public class SceneLoader : MonoBehaviour
 
     private IEnumerator FadeInAtStartup()
     {
-        yield return fadeImage.DOFade(0f, fadeDuration).WaitForCompletion();
-        fadeImage.gameObject.SetActive(false);
-
-        if (SceneManager.sceneCount > 1)
-            currentLoadedScene = SceneManager.GetActiveScene().name;
+        yield return FadeTo(0f);
     }
 
     private void OnEnable()
@@ -66,6 +66,12 @@ public class SceneLoader : MonoBehaviour
 
     private void HandleSceneLoadRequested(string sceneName)
     {
+        if (string.IsNullOrEmpty(sceneName))
+        {
+            Debug.LogError("SceneLoader: Scene name boş!");
+            return;
+        }
+
         if (isTransitioning)
             return;
 
@@ -78,36 +84,43 @@ public class SceneLoader : MonoBehaviour
     private IEnumerator LoadSceneRoutine(string sceneName)
     {
         isTransitioning = true;
+        waitForLevelLoadedBeforeFadeOut = false;
 
-        fadeImage.gameObject.SetActive(true);
-        yield return fadeImage.DOFade(1f, fadeDuration).WaitForCompletion();
+        yield return FadeTo(1f);
 
         GameEvents.RaiseSceneLoadStarted(sceneName);
 
-        AsyncOperation loadOp = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
+        // ÖNEMLİ:
+        // Additive yerine Single kullanıyoruz.
+        // Böylece MainMenu sahnesi Cutscene üstünde kalmaz.
+        AsyncOperation loadOp = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Single);
+
+        if (loadOp == null)
+        {
+            Debug.LogError($"SceneLoader: Scene yüklenemedi. Build Settings içinde var mı? Scene: {sceneName}");
+            isTransitioning = false;
+            yield break;
+        }
+
         while (!loadOp.isDone)
             yield return null;
-
-        Scene newScene = SceneManager.GetSceneByName(sceneName);
-        SceneManager.SetActiveScene(newScene);
-
-        if (!string.IsNullOrEmpty(currentLoadedScene))
-            yield return SceneManager.UnloadSceneAsync(currentLoadedScene);
 
         currentLoadedScene = sceneName;
 
         yield return null;
 
+        bool isGameplayScene = sceneName == gameplaySceneName;
+
+        if (isGameplayScene)
+            waitForLevelLoadedBeforeFadeOut = true;
+
         GameEvents.RaiseSceneLoadCompleted(sceneName);
 
-        // Sadece Gameplay geçişinde fade out'ı level prefab yüklenene kadar beklet
-        if (sceneName == gameplaySceneName)
-        {
-            waitForLevelLoadedBeforeFadeOut = true;
+        if (isGameplayScene)
             yield break;
-        }
 
-        yield return FadeOutRoutine();
+        yield return FadeTo(0f);
+
         isTransitioning = false;
     }
 
@@ -116,26 +129,36 @@ public class SceneLoader : MonoBehaviour
         if (!waitForLevelLoadedBeforeFadeOut)
             return;
 
-        StartCoroutine(FinishDeferredFadeOutRoutine());
+        StartCoroutine(FinishGameplayTransitionRoutine());
     }
 
-    private IEnumerator FinishDeferredFadeOutRoutine()
+    private IEnumerator FinishGameplayTransitionRoutine()
     {
         waitForLevelLoadedBeforeFadeOut = false;
 
         yield return null;
 
-        yield return FadeOutRoutine();
+        yield return FadeTo(0f);
+
         isTransitioning = false;
     }
 
-    private IEnumerator FadeOutRoutine()
+    private IEnumerator FadeTo(float alpha)
     {
         if (fadeImage == null)
             yield break;
 
-        yield return fadeImage.DOFade(0f, fadeDuration).WaitForCompletion();
-        fadeImage.gameObject.SetActive(false);
+        fadeImage.DOKill();
+        fadeImage.gameObject.SetActive(true);
+
+        yield return fadeImage
+            .DOFade(alpha, fadeDuration)
+            .SetEase(Ease.OutQuad)
+            .SetUpdate(true)
+            .WaitForCompletion();
+
+        if (alpha <= 0f)
+            fadeImage.gameObject.SetActive(false);
     }
 
     private void HandleQuitRequested()
@@ -150,8 +173,7 @@ public class SceneLoader : MonoBehaviour
     {
         isTransitioning = true;
 
-        fadeImage.gameObject.SetActive(true);
-        yield return fadeImage.DOFade(1f, fadeDuration).WaitForCompletion();
+        yield return FadeTo(1f);
 
 #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;

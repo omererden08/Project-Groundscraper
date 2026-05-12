@@ -21,6 +21,8 @@ public class InputManager : MonoBehaviour
 
     public bool PausePressed { get; private set; }
 
+    public bool CutsceneAdvancePressed => attackPressed || interactPressed;
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -42,6 +44,9 @@ public class InputManager : MonoBehaviour
 
     private void Update()
     {
+        if (inputActions == null)
+            return;
+
         MoveInput = inputActions.Player.Move.ReadValue<Vector2>();
 
         if (Mouse.current != null)
@@ -50,7 +55,47 @@ public class InputManager : MonoBehaviour
         LookDirection = Vector2.zero;
     }
 
-    public void ConsumeAttackInput() => attackPressed = false;
-    public void ConsumePauseInput() => PausePressed = false;
-    public void ConsumeInteractInput() => interactPressed = false;
+    public void ConsumeAttackInput()
+    {
+        attackPressed = false;
+    }
+
+    public void ConsumePauseInput()
+    {
+        PausePressed = false;
+    }
+
+    public void ConsumeInteractInput()
+    {
+        interactPressed = false;
+    }
+
+    public bool TryConsumeCutsceneAdvanceInput(bool useAttackInput = true, bool useInteractInput = true)
+    {
+        bool pressed = false;
+
+        if (useAttackInput && attackPressed)
+        {
+            pressed = true;
+            attackPressed = false;
+        }
+
+        if (useInteractInput && interactPressed)
+        {
+            pressed = true;
+            interactPressed = false;
+        }
+
+        return pressed;
+    }
+
+    private void OnDestroy()
+    {
+        if (inputActions != null)
+        {
+            inputActions.Disable();
+            inputActions.Dispose();
+            inputActions = null;
+        }
+    }
 }

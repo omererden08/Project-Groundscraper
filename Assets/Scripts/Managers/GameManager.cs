@@ -5,6 +5,7 @@ public class GameManager : MonoBehaviour
     public static GameManager Instance { get; private set; }
 
     [SerializeField] private GameState currentState = GameState.MainMenu;
+
     public GameState CurrentState => currentState;
 
     private string sceneAfterCutscene;
@@ -21,6 +22,8 @@ public class GameManager : MonoBehaviour
 
         Instance = this;
         DontDestroyOnLoad(gameObject);
+
+        ApplyCursorState(currentState);
     }
 
     private void OnEnable()
@@ -51,16 +54,22 @@ public class GameManager : MonoBehaviour
 
         if (!string.IsNullOrEmpty(sceneAfterCutscene))
         {
-            GameEvents.RaiseSceneLoadRequested(sceneAfterCutscene);
+            string nextScene = sceneAfterCutscene;
             sceneAfterCutscene = null;
+
+            GameEvents.RaiseSceneLoadRequested(nextScene);
         }
     }
 
     public void SetGameState(GameState newState)
     {
-        if (currentState == newState) return;
+        if (currentState == newState)
+            return;
 
         currentState = newState;
+
+        ApplyCursorState(newState);
+
         GameEvents.RaiseGameStateChanged(newState);
 
         switch (newState)
@@ -86,6 +95,43 @@ public class GameManager : MonoBehaviour
 
             case GameState.MainMenu:
                 Time.timeScale = 1f;
+                break;
+        }
+    }
+
+    private void ApplyCursorState(GameState state)
+    {
+        switch (state)
+        {
+            case GameState.MainMenu:
+                // MainMenu'de normal mouse cursor görünsün.
+                Cursor.visible = true;
+                Cursor.lockState = CursorLockMode.None;
+                break;
+
+            case GameState.Playing:
+                // Gameplay'de sprite cursor kullanacağın için gerçek cursor gizli.
+                // Mouse kilitli değil, böylece sprite cursor mouse pozisyonunu takip edebilir.
+                Cursor.visible = false;
+                Cursor.lockState = CursorLockMode.None;
+                break;
+
+            case GameState.Cutscene:
+                // Cutscene sırasında cursor görünmesin ve kilitli olsun.
+                Cursor.visible = false;
+                Cursor.lockState = CursorLockMode.Locked;
+                break;
+
+            case GameState.Paused:
+                // Senin isteğine göre MainMenu dışında cursor görünmüyor.
+                Cursor.visible = false;
+                Cursor.lockState = CursorLockMode.Locked;
+                break;
+
+            case GameState.GameOver:
+                // GameOver'da da cursor görünmesin.
+                Cursor.visible = false;
+                Cursor.lockState = CursorLockMode.Locked;
                 break;
         }
     }

@@ -569,6 +569,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 43101188f6b8b1a42baabebfc489990a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BacktoMenu
+  mainMenuSceneName: MainMenu
+  useAttackInput: 1
+  useInteractInput: 0
 --- !u!1 &1960618223
 GameObject:
   m_ObjectHideFlags: 0

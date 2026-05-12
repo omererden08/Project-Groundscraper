@@ -11395,6 +11395,7 @@ GameObject:
   - component: {fileID: 6422386286785143392}
   - component: {fileID: 5487764748379840955}
   - component: {fileID: 5250044550428816618}
+  - component: {fileID: 6998445664129976808}
   m_Layer: 0
   m_Name: ExitTrigger
   m_TagString: Untagged
@@ -11470,11 +11471,27 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4328035821596205473}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9e3ad7a67181e0e4497c222dbd30c658, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NextLevelTrigger
+--- !u!114 &6998445664129976808
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4328035821596205473}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ff37b3e604e0f9f4d9f876ace3537c14, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EndingTrigger
+  endingSceneName: Ending
+  activateOnlyAfterStageClear: 1
+  destroyPlayerWeaponOnEnter: 1
+  setGameStateToCutscene: 1
 --- !u!1 &5341902673017380806
 GameObject:
   m_ObjectHideFlags: 0

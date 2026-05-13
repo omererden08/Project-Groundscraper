@@ -103,10 +103,10 @@ TextureImporter:
       name: main_menu_quit_0
       rect:
         serializedVersion: 2
-        x: 2765
-        y: 1783
-        width: 2999
-        height: 884
+        x: 359
+        y: 230
+        width: 397
+        height: 121
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
